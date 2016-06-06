@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.uc.ronrwin.uctopic.smarttablayout.SmartTabLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/viewpagertab"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/smarttab_height"
+    android:background="#666666"
+    app:stl_defaultTabTextColor="@android:color/white"
+    app:stl_defaultTabTextHorizontalPadding="24dp"
+    app:stl_indicatorInterpolation="smart"
+    app:stl_indicatorThickness="3dp"
+    app:stl_underlineThickness="1dp" />
+

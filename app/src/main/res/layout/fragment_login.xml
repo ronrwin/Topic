@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:colorpoint="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:id="@+id/logo_backgroud"
+        android:layout_width="match_parent"
+        android:layout_height="350dp">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/infoflow_unlogin_background" />
+
+        <ImageView
+            android:layout_width="35dp"
+            android:layout_height="35dp"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="15dp"
+            android:layout_marginTop="40dp"
+            android:src="@drawable/infoflow_unlogin_setting" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:src="@drawable/infoflow_unlogin_logo" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/circle_layout"
+        android:layout_width="@dimen/login_circle_size"
+        android:layout_height="@dimen/login_circle_size"
+        android:layout_gravity="center_horizontal"
+        android:translationY="310dp">
+
+        <com.uc.ronrwin.uctopic.widget.ColorPoint
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            colorpoint:color="@color/theme" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="@string/login"
+            android:textColor="@android:color/black"
+            android:textSize="18dp" />
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/login_tip"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#ff666666"
+        android:translationY="350dp"
+        android:textSize="14dp"
+        android:paddingTop="80dp"
+        android:gravity="center_horizontal"
+        android:text="@string/login_tip"/>
+</FrameLayout>

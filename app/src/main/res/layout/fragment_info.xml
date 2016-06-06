@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/scrollView"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/white"
+        android:translationY="@dimen/temperature_height">
+
+        <com.uc.ronrwin.uctopic.smarttablayout.SmartTabLayout
+            android:id="@+id/viewpagertab"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/smarttab_height"
+            android:background="@android:color/white"
+            app:stl_defaultTabTextColor="#666666"
+            app:stl_defaultTabTextHorizontalPadding="@dimen/tab_padding"
+            app:stl_dividerThickness="0dp"
+            app:stl_indicatorColors="@array/custom_tab_colors"
+            app:stl_indicatorInterpolation="smart"
+            app:stl_indicatorThickness="3dp"
+            app:stl_titleOffset="auto_center"
+            app:stl_underlineThickness="0dp" />
+
+        <com.uc.ronrwin.uctopic.widget.JazzyViewPager
+            android:id="@+id/viewpager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@+id/viewpagertab" />
+    </RelativeLayout>
+</FrameLayout>

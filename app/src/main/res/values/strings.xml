@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">UCTopic</string>
+
+    <string name="temperature">32\'</string>
+    <string name="login">登录</string>
+    <string name="login_tip">登录后可查看收藏记录</string>
+    <string name="temperature_desc">和\n风\n细\n雨</string>
+    <string name="location">天河区</string>
+    <string name="wind_strength">1</string>
+    <string name="wind">微风</string>
+    <string name="temperature_range">32\'/35\'</string>
+    <string name="weather">晴天</string>
+    <string name="air_quality_num">33</string>
+    <string name="air_quality">空气质量优</string>
+</resources>

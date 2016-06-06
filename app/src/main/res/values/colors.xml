@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+
+    <color name="white">#ffffff</color>
+    <color name="theme">#ffc63f</color>
+    <color name="default_item">#eeeeee</color>
+    <color name="black_alpha">#88000000</color>
+    <color name="gray_1">#aaaaaa</color>
+    <color name="temperature_black">#222222</color>
+    <color name="video_extra_bg">#17181a</color>
+    <color name="video_support_color">#303133</color>
+
+    <color name="light_blue_500">#03A9F4</color>
+    <color name="cyan_500">#00BCD4</color>
+    <color name="teal_500">#009688</color>
+    <color name="green_500">#4CAF50</color>
+    <color name="light_green_500">#8BC34A</color>
+
+    <integer-array name="custom_tab_colors">
+        <item>@color/light_blue_500</item>
+        <item>@color/cyan_500</item>
+        <item>@color/teal_500</item>
+        <item>@color/green_500</item>
+        <item>@color/light_green_500</item>
+    </integer-array>
+</resources>

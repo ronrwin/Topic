@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="@dimen/smarttab_height"
+    android:gravity="center"
+    android:orientation="horizontal"
+    android:paddingLeft="@dimen/tab_padding"
+    android:paddingRight="@dimen/tab_padding">
+
+    <com.uc.ronrwin.uctopic.widget.TitleIcon
+        android:id="@+id/tab_logo"
+        android:layout_marginTop="3dp"
+        android:layout_width="18dp"
+        android:layout_height="21dp" />
+
+    <TextView
+        android:id="@+id/tab_text"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:textColor="@android:color/black"
+        android:textSize="16dp" />
+</LinearLayout>
+

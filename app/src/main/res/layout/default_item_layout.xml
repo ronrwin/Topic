@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="80dp"
+    android:background="@android:color/white"
+    android:padding="@dimen/viewpager_pager_padding">
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="10dp"
+        android:layout_marginRight="150dp"
+        android:background="@color/default_item" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="10dp"
+        android:layout_marginRight="250dp"
+        android:layout_marginTop="20dp"
+        android:background="@color/default_item" />
+
+    <View
+        android:layout_width="80dp"
+        android:layout_height="60dp"
+        android:layout_gravity="right"
+        android:background="@color/default_item" />
+</FrameLayout>
+
