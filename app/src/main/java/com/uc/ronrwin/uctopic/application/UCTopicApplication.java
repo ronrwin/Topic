@@ -3,15 +3,10 @@ package com.uc.ronrwin.uctopic.application;
 import android.app.Application;
 import android.content.Context;
 
-import com.uc.ronrwin.uctopic.manager.ThreadManager;
+import com.uc.ronrwin.uctopic.manager.DataManager;
+import com.uc.ronrwin.uctopic.manager.RequestManager;
 
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import okhttp3.OkHttpClient;
 
@@ -27,7 +22,8 @@ public class UCTopicApplication extends Application{
 
     public static Context mContext;
     public static OkHttpClient okHttpClient;
-    public static ThreadManager threadManager;
+    public static DataManager dataManager;
+    public static RequestManager requestManager;
 
     public UCTopicApplication() {
     }
@@ -35,8 +31,12 @@ public class UCTopicApplication extends Application{
     @Override
     public void onCreate() {
         mContext = getApplicationContext();
-        okHttpClient = new OkHttpClient();
-        threadManager = new ThreadManager();
+        dataManager = new DataManager();
+        requestManager = new RequestManager();
+
+        okHttpClient = new OkHttpClient.Builder()
+                .connectTimeout(10, TimeUnit.SECONDS)
+                .build();
         super.onCreate();
     }
 

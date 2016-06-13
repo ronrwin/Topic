@@ -1,4 +1,4 @@
-package com.uc.ronrwin.uctopic.Model.entity;
+package com.uc.ronrwin.uctopic.model.entity;
 
 import org.json.JSONObject;
 
@@ -10,7 +10,7 @@ import org.json.JSONObject;
  * Creation    : 2016/5/18
  * Author      : Ronrwin
  */
-public abstract class BaseCard {
+public abstract class BaseCard extends Entity{
     public int typeId;
     public String title;
     public long createtime;
@@ -25,4 +25,5 @@ public abstract class BaseCard {
     }
 
     public abstract void parseExtra(JSONObject json);
+
 }

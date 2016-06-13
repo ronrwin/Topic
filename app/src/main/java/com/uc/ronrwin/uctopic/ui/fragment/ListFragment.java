@@ -1,32 +1,40 @@
 package com.uc.ronrwin.uctopic.ui.fragment;
 
-import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewParent;
-import android.view.animation.Animation;
-import android.view.animation.RotateAnimation;
+import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.nineoldandroids.view.ViewHelper;
+import com.squareup.picasso.Picasso;
+import com.uc.ronrwin.uctopic.R;
+import com.uc.ronrwin.uctopic.application.UCTopicApplication;
 import com.uc.ronrwin.uctopic.constant.BundleKeys;
 import com.uc.ronrwin.uctopic.constant.NormalContants;
-import com.uc.ronrwin.uctopic.utils.ScreenUtils;
-import com.uc.ronrwin.uctopic.widget.PercentCircle;
-import com.uc.ronrwin.uctopic.R;
-import com.uc.ronrwin.uctopic.ultra.PtrDefaultHandler;
-import com.uc.ronrwin.uctopic.ultra.PtrFrameLayout;
-import com.uc.ronrwin.uctopic.ultra.PtrHandler;
-import com.uc.ronrwin.uctopic.ultra.PtrIndicator;
-import com.uc.ronrwin.uctopic.ultra.PtrTensionIndicator;
-import com.uc.ronrwin.uctopic.ultra.PtrUIHandler;
+import com.uc.ronrwin.uctopic.http.LoadServerDataListener;
+import com.uc.ronrwin.uctopic.http.OkHttpUtils;
+import com.uc.ronrwin.uctopic.http.ParseUtils;
+import com.uc.ronrwin.uctopic.model.base.MetaServerData;
+import com.uc.ronrwin.uctopic.model.entity.TopicCard;
+import com.uc.ronrwin.uctopic.ui.MainActivity;
+import com.uc.ronrwin.uctopic.utils.PreferencesHelper;
+import com.uc.ronrwin.uctopic.utils.TimeUtils;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.util.ArrayList;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Response;
 
 /**
  * Copyright (C) 2004 - 2015 UCWeb Inc. All Rights Reserved.
@@ -38,8 +46,12 @@ import com.uc.ronrwin.uctopic.ultra.PtrUIHandler;
  */
 public class ListFragment extends BaseListFragment {
 
-    private MyRecyclerAdapter mMyRecyclerAdapter;
-//
+    private DefaultRecyclerAdapter mDefaultRecyclerAdapter;
+    ArrayList<TopicCard> topics = new ArrayList<>();
+    private TopicAdapter mTopicAdapter;
+
+    private String mTitle = "";
+
     public ListFragment() {
     }
 
@@ -54,40 +66,204 @@ public class ListFragment extends BaseListFragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
 
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(mContext));
-        mMyRecyclerAdapter = new MyRecyclerAdapter();
-        mRecyclerView.setAdapter(mMyRecyclerAdapter);
+        if (getArguments() != null) {
+            Bundle bundle = getArguments();
+            if (bundle.containsKey(BundleKeys.TITLE)) {
+                mTitle = bundle.getString(BundleKeys.TITLE);
+            }
+        }
+        mRefreshTimePrefrenced = PreferencesHelper.getSharedPreferences("tabs");
+        mLastUpdate = mRefreshTimePrefrenced.getLong(LAST_UPDATE + mTitle, System.currentTimeMillis());
+        mRefreshText.setText(TimeUtils.simplyTime(mLastUpdate));
+
+        mDefaultRecyclerAdapter = new DefaultRecyclerAdapter();
+        mTopicAdapter = new TopicAdapter();
+        mRecyclerView.setAdapter(mDefaultRecyclerAdapter);
+
+
+        // todo:调整主页天气
+        mFrameLayout.setMainActivity(getActivity());
+        InfoFragment fragment = (InfoFragment) getFragmentManager().findFragmentByTag(NormalContants.FragmentTag.TOPIC_TAG);
+        if (fragment != null) {
+            mFrameLayout.setInfoFragment(fragment);
+        }
+
+        mFrameLayout.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                mFrameLayout.autoRefresh();
+            }
+        }, 1000);
 
         return mRootView;
     }
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-
-        super.onViewCreated(view, savedInstanceState);
+    void refreshPrepare() {
+        mLastUpdate = mRefreshTimePrefrenced.getLong(LAST_UPDATE + mTitle, System.currentTimeMillis());
+        mRefreshText.setText(TimeUtils.simplyTime(mLastUpdate));
     }
 
-    class VH extends RecyclerView.ViewHolder {
-        public VH(View itemView) {
+    @Override
+    protected void refreshLoad() {
+        UCTopicApplication.dataManager.loadListData(mTitle, new LoadServerDataListener<ArrayList<TopicCard>>() {
+            @Override
+            public void onFailure(String message) {
+
+            }
+
+            @Override
+            public void onSuccess(final ArrayList<TopicCard> data) {
+                topics = data;
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mFrameLayout.refreshComplete();
+                        mRecyclerView.setAdapter(mTopicAdapter);
+                        mTopicAdapter.notifyDataSetChanged();
+
+                        mLastUpdate = System.currentTimeMillis();
+                        mRefreshTimePrefrenced.edit().putLong(LAST_UPDATE + mTitle, mLastUpdate).apply();
+                        mRefreshText.setText(TimeUtils.simplyTime(mLastUpdate));
+                    }
+                });
+            }
+        }, true);
+
+    }
+
+    class TopicVH extends RecyclerView.ViewHolder {
+        ImageView thumb;
+        TextView title;
+        TextView time;
+        ViewGroup root;
+        ImageView thumb1, thumb2, thumb3;
+
+        TopicVH(View itemView) {
             super(itemView);
         }
+
+        TopicVH(View itemView, int viewType) {
+            super(itemView);
+            if (viewType == NormalContants.CardType.TOPIC_CARD_1) {
+                title = (TextView) itemView.findViewById(R.id.topic_title);
+                time = (TextView) itemView.findViewById(R.id.topic_time);
+                root = (ViewGroup) itemView.findViewById(R.id.item_layout);
+            } else if (viewType == NormalContants.CardType.TOPIC_CARD_2) {
+                thumb = (ImageView) itemView.findViewById(R.id.topic_thumb);
+                title = (TextView) itemView.findViewById(R.id.topic_title);
+                time = (TextView) itemView.findViewById(R.id.topic_time);
+                root = (ViewGroup) itemView.findViewById(R.id.item_layout);
+            } else if (viewType == NormalContants.CardType.TOPIC_CARD_3) {
+                title = (TextView) itemView.findViewById(R.id.topic_title);
+                time = (TextView) itemView.findViewById(R.id.topic_time);
+                root = (ViewGroup) itemView.findViewById(R.id.item_layout);
+                thumb1 = (ImageView) itemView.findViewById(R.id.topic_thumb_1);
+                thumb2 = (ImageView) itemView.findViewById(R.id.topic_thumb_2);
+                thumb3 = (ImageView) itemView.findViewById(R.id.topic_thumb_3);
+            } else {
+                root = (ViewGroup) itemView.findViewById(R.id.item_layout);
+            }
+
+
+        }
+
     }
 
-    class MyRecyclerAdapter extends RecyclerView.Adapter<VH> {
+    private class TopicAdapter extends RecyclerView.Adapter<TopicVH> {
         @Override
-        public VH onCreateViewHolder(ViewGroup parent, int viewType) {
+        public TopicVH onCreateViewHolder(ViewGroup parent, int viewType) {
             View v = LayoutInflater.from(mContext).inflate(R.layout.default_item_layout, null);
-            return new VH(v);
+            if (viewType == NormalContants.CardType.TOPIC_CARD_1) {
+                v = LayoutInflater.from(mContext).inflate(R.layout.topic_item_layout_1, null);
+                return new TopicVH(v, viewType);
+            } else if (viewType == NormalContants.CardType.TOPIC_CARD_2) {
+                v = LayoutInflater.from(mContext).inflate(R.layout.topic_item_layout_2, null);
+                return new TopicVH(v, viewType);
+            } else if (viewType == NormalContants.CardType.TOPIC_CARD_3) {
+                v = LayoutInflater.from(mContext).inflate(R.layout.topic_item_layout_3, null);
+                return new TopicVH(v, viewType);
+            }
+            return new TopicVH(v, viewType);
         }
 
         @Override
-        public void onBindViewHolder(VH holder, int position) {
+        public void onBindViewHolder(TopicVH holder, int position) {
+            int index = position % topics.size();
+            final TopicCard card = topics.get(index);
+            if (card.typeId == NormalContants.CardType.TOPIC_CARD_1) {
+                if (card.images.get(0) != "") {
+                    Picasso.with(mContext).load(card.images.get(0)).into(holder.thumb);
+                }
+                holder.title.setText(card.title);
+                holder.time.setText(card.fromMedia);
+            } else if (card.typeId == NormalContants.CardType.TOPIC_CARD_2) {
+                if (card.images.get(0) != "") {
+                    Picasso.with(mContext).load(card.images.get(0)).into(holder.thumb);
+                }
+                holder.title.setText(card.title);
+                holder.time.setText(card.fromMedia);
+            } else if (card.typeId == NormalContants.CardType.TOPIC_CARD_3) {
+                if (card.images.size() > 2) {
+                    Picasso.with(mContext).load(card.images.get(0)).into(holder.thumb1);
+                    Picasso.with(mContext).load(card.images.get(1)).into(holder.thumb2);
+                    Picasso.with(mContext).load(card.images.get(2)).into(holder.thumb3);
+                }
+                holder.title.setText(card.title);
+                holder.time.setText(card.fromMedia);
+            }
+            holder.root.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    MainActivity ac = (MainActivity) getActivity();
+                    ac.startTransition(v, card.url);
+                }
+            });
+        }
 
+        @Override
+        public int getItemViewType(int position) {
+            int index = position % topics.size();
+            return topics.get(index).typeId;
         }
 
         @Override
         public int getItemCount() {
-            return 50;
+            return 40;
+        }
+    }
+
+    class DefaultVH extends RecyclerView.ViewHolder {
+        ViewGroup defaultLayout;
+        TextView text;
+
+        DefaultVH(View itemView) {
+            super(itemView);
+            defaultLayout = (ViewGroup) itemView.findViewById(R.id.item_layout);
+            text = (TextView) itemView.findViewById(R.id.default_text);
+        }
+    }
+
+    private class DefaultRecyclerAdapter extends RecyclerView.Adapter<DefaultVH> {
+        @Override
+        public DefaultVH onCreateViewHolder(ViewGroup parent, int viewType) {
+            View v = LayoutInflater.from(mContext).inflate(R.layout.default_item_layout, null);
+            return new DefaultVH(v);
+        }
+
+        @Override
+        public void onBindViewHolder(DefaultVH holder, int position) {
+            holder.text.setText(position + "");
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            return super.getItemViewType(position);
+        }
+
+        @Override
+        public int getItemCount() {
+            return 20;
         }
     }
 

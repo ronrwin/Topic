@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/item_layout"
     android:layout_width="match_parent"
     android:layout_height="80dp"
-    android:background="@android:color/white"
+    android:background="@drawable/item_selector"
     android:padding="@dimen/viewpager_pager_padding">
 
     <View
@@ -18,10 +19,12 @@
         android:layout_marginTop="20dp"
         android:background="@color/default_item" />
 
-    <View
+    <TextView
+        android:id="@+id/default_text"
         android:layout_width="80dp"
         android:layout_height="60dp"
         android:layout_gravity="right"
+        android:gravity="center"
         android:background="@color/default_item" />
 </FrameLayout>
 

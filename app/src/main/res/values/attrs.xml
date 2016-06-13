@@ -19,7 +19,7 @@
         <attr name="ptr_rotate_ani_time" format="integer" />
     </declare-styleable>
 
-    <declare-styleable name="JazzyViewPager">
+    <declare-styleable name="UCViewPager">
         <attr name="style">
             <enum name="standard" value="0" />
             <enum name="tablet" value="1" />

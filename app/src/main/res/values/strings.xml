@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">UCTopic</string>
 
+    <string name="url_web_host">http://100.84.46.62:5000/</string>
+
     <string name="temperature">32\'</string>
     <string name="login">登录</string>
     <string name="login_tip">登录后可查看收藏记录</string>
@@ -12,4 +14,22 @@
     <string name="weather">晴天</string>
     <string name="air_quality_num">33</string>
     <string name="air_quality">空气质量优</string>
+    <string name="comment_tip">发表伟大言论</string>
+
+    <string-array name="default_tabs">
+        <item>推荐</item>
+        <item>热点</item>
+        <item>娱乐</item>
+        <item>体育</item>
+        <item>财经</item>
+        <item>科技</item>
+        <item>汽车</item>
+        <item>社会</item>
+        <item>搞笑</item>
+        <item>军事</item>
+        <item>历史</item>
+        <item>涨姿势</item>
+        <item>两性</item>
+        <item>NBA</item>
+    </string-array>
 </resources>

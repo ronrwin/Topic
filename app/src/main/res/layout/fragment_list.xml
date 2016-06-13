@@ -15,12 +15,16 @@
         cube_ptr:ptr_keep_header_when_refresh="true"
         cube_ptr:ptr_pull_to_fresh="false"
         cube_ptr:ptr_ratio_of_header_height_to_refresh="1.2"
+        android:fadingEdgeLength="0dp"
         cube_ptr:ptr_resistance="1.7">
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent"
+            android:fadingEdgeLength="0dp"
+            android:overScrollMode="never"
+            android:fadingEdge="none"/>
 
     </com.uc.ronrwin.uctopic.ultra.PtrFrameLayout>
 </RelativeLayout>

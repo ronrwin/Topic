@@ -1,4 +1,4 @@
-package com.uc.ronrwin.uctopic.Model.base;
+package com.uc.ronrwin.uctopic.model.base;
 
 import org.json.JSONObject;
 
@@ -11,12 +11,10 @@ import org.json.JSONObject;
  * Creation    : 2016/5/30
  * Author      : Ronrwin
  */
-public class MetaServerData<T> {
+public class MetaServerData {
     public int code;
     public String message;
     public JSONObject metaJson;
-
-    public T data;
 
     public static final int OK = 1;
     public static final int FAIL = -1;

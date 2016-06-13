@@ -1,11 +1,13 @@
 package com.uc.ronrwin.uctopic.http;
 
 import com.uc.ronrwin.uctopic.application.UCTopicApplication;
+import com.uc.ronrwin.uctopic.utils.ThreadUtils;
 
 import java.util.List;
 
 import okhttp3.Callback;
 import okhttp3.FormBody;
+import okhttp3.HttpUrl;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 
@@ -18,10 +20,8 @@ import okhttp3.RequestBody;
  * Author      : Ronrwin
  */
 public class OkHttpUtils {
-
-
     public static void asynGet(final String url, final Callback callback) {
-        UCTopicApplication.threadManager.getExecutorService().execute(new Runnable() {
+        ThreadUtils.getExecutorService().execute(new Runnable() {
             @Override
             public void run() {
                 Request request = new Request.Builder()
@@ -41,7 +41,7 @@ public class OkHttpUtils {
     }
 
     public static void asynPost(final String url, final List<BasicNameValuePair> params, final Callback callback) {
-        UCTopicApplication.threadManager.getExecutorService().execute(new Runnable() {
+        ThreadUtils.getExecutorService().execute(new Runnable() {
             @Override
             public void run() {
                 RequestBody formBody = formBody(params);

@@ -1,7 +1,8 @@
-package com.uc.ronrwin.uctopic.Model.entity;
+package com.uc.ronrwin.uctopic.model.entity;
 
-import com.uc.ronrwin.uctopic.Model.base.IBaseEntityBuilder;
+import com.uc.ronrwin.uctopic.model.base.IBaseEntityBuilder;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -13,7 +14,7 @@ import org.json.JSONObject;
  * Creation    : 2016/5/18
  * Author      : Ronrwin
  */
-public class TabEntity implements IBaseEntityBuilder<TabEntity> {
+public class TabEntity extends Entity implements IBaseEntityBuilder<TabEntity> {
     public int id;
     public int index;
     public String name;
@@ -42,5 +43,18 @@ public class TabEntity implements IBaseEntityBuilder<TabEntity> {
     @Override
     public TabEntity create(JSONObject jsonObject) {
         return new TabEntity(jsonObject);
+    }
+
+    @Override
+    public String toString() {
+        JSONObject json = new JSONObject();
+        try {
+            json.put("id", id);
+            json.put("index", index);
+            json.put("name", name);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return json.toString();
     }
 }

@@ -1,23 +1,29 @@
 package com.uc.ronrwin.uctopic.ui.fragment;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.PagerAdapter;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
-import android.widget.FrameLayout;
-import android.widget.TextView;
+import android.widget.ImageView;
 
 import com.uc.ronrwin.uctopic.R;
-import com.uc.ronrwin.uctopic.widget.JazzyViewPager;
-import com.uc.ronrwin.uctopic.smarttablayout.SmartTabLayout;
-import com.uc.ronrwin.uctopic.widget.TabView;
+import com.uc.ronrwin.uctopic.application.UCTopicApplication;
+import com.uc.ronrwin.uctopic.constant.BundleKeys;
+import com.uc.ronrwin.uctopic.http.LoadServerDataListener;
+import com.uc.ronrwin.uctopic.model.entity.TabEntity;
+import com.uc.ronrwin.uctopic.utils.PreferencesHelper;
+import com.uc.ronrwin.uctopic.widget.UCViewPager;
+import com.uc.ronrwin.uctopic.widget.smarttablayout.SmartTabLayout;
+import com.uc.ronrwin.uctopic.widget.smarttablayout.TabView;
 
 import java.util.ArrayList;
 
@@ -29,23 +35,23 @@ import java.util.ArrayList;
  * Creation    : 2016/5/24
  * Author      : Ronrwin
  */
-public class InfoFragment extends Fragment {
+public class InfoFragment extends Fragment implements View.OnClickListener {
 
     protected View mRootView;
     protected Context mContext;
 
-    private JazzyViewPager mViewPager;
+    private UCViewPager mViewPager;
     private SmartTabLayout mSmartTabLayout;
 
     private FragmentManager mFragmentManager;
 
-    // todo: 为了使子控件能够调用，直接采用public，以后有时间再改为接口处理
-    public FrameLayout mScrollView;
-
-    public float currentY;
+    public ViewGroup mContentLayout;
+    private ImageView mChannelSetting;
+    private ArrayList<TabEntity> mTabs = new ArrayList<>();
 
     private ArrayList<ListFragment> mFragments = new ArrayList<>();
-    private int[] colors;
+    private int mOriginPadding;
+
 
     public InfoFragment() {
     }
@@ -56,6 +62,58 @@ public class InfoFragment extends Fragment {
         return fragment;
     }
 
+    private SmartTabLayout.TabProvider mTabProvider = new SmartTabLayout.TabProvider() {
+        @Override
+        public View createTabView(ViewGroup container, int position, PagerAdapter adapter) {
+            TabView tabView = new TabView(mContext);
+            tabView.title.setText(mTabs.get(position).name);
+            if (position == 0) {
+//                tabView.title.setText("头条");
+                tabView.titleIcon.setVisibility(View.VISIBLE);
+                tabView.title.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
+            } else {
+                tabView.setAlpha(0.5f);
+                tabView.titleIcon.setVisibility(View.GONE);
+            }
+            return tabView;
+        }
+    };
+
+
+    // TODO：暂时只使用本地的
+    private void loadTab() {
+        UCTopicApplication.dataManager.loadTabData(new LoadServerDataListener<ArrayList<TabEntity>>() {
+            @Override
+            public void onFailure(String message) {
+
+            }
+
+            @Override
+            public void onSuccess(ArrayList<TabEntity> data) {
+                mTabs = data;
+                setTabAndFragmentData();
+            }
+        });
+
+    }
+
+    private void setTabAndFragmentData() {
+        mFragments.clear();
+        for (int i = 0; i < mTabs.size(); i++) {
+            Bundle bundle = new Bundle();
+            bundle.putString(BundleKeys.TITLE, mTabs.get(i).name);
+            ListFragment listFragment = ListFragment.newInstance(bundle);
+            mFragments.add(listFragment);
+        }
+
+        mViewPager.setPageMargin(30);
+        mViewPager.setmFragments(mFragments);
+        mViewPager.setAdapter(new MyPagerAdapter());
+        mSmartTabLayout.setCustomTabView(mTabProvider);
+        mSmartTabLayout.setViewPager(mViewPager);
+        PreferencesHelper.saveTabData(mTabs.toString());
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -64,50 +122,20 @@ public class InfoFragment extends Fragment {
 
             mFragmentManager = getFragmentManager();
             mRootView = inflater.inflate(R.layout.fragment_info, container, false);
-            colors = mContext.getResources().getIntArray(R.array.custom_tab_colors);
 
-            for (int i = 0; i < 14; i++) {
-                Bundle bundle = new Bundle();
-                bundle.putString("title", "" + i);
-                bundle.putInt("color", colors[i % colors.length]);
-                bundle.putInt("bgcolor", colors[(i + 2) % colors.length]);
-                ListFragment listFragment = ListFragment.newInstance(bundle);
-                mFragments.add(listFragment);
-            }
-
-            mScrollView = (FrameLayout) mRootView.findViewById(R.id.scrollView);
-            mViewPager = (JazzyViewPager) mRootView.findViewById(R.id.viewpager);
-            mViewPager.setmFragments(mFragments);
+            mContentLayout = (ViewGroup) mRootView.findViewById(R.id.info_layout);
+            mViewPager = (UCViewPager) mRootView.findViewById(R.id.viewpager);
+            mChannelSetting = (ImageView) mRootView.findViewById(R.id.channel_setting);
             mSmartTabLayout = (SmartTabLayout) mRootView.findViewById(R.id.viewpagertab);
-            mViewPager.setAdapter(new MyPagerAdapter());
-            mViewPager.setPageMargin(30);
-            mSmartTabLayout.setCustomTabView(new SmartTabLayout.TabProvider() {
-                @Override
-                public View createTabView(ViewGroup container, int position, PagerAdapter adapter) {
-                    TabView tabView = new TabView(mContext);
-                    StringBuilder sb = new StringBuilder("");
-                    int len = position % 4 + 1;
-                    for (int i = 0; i < len; i++) {
-                        sb.append("" + i);
-                    }
-                    tabView.title.setText(sb.toString());
-                    if (position == 0) {
-                        tabView.title.setText("头条");
-                        tabView.titleIcon.setVisibility(View.VISIBLE);
-                    } else {
-                        tabView.titleIcon.setVisibility(View.GONE);
-                    }
-                    return tabView;
-                }
-            });
-            mSmartTabLayout.setViewPager(mViewPager);
-            mSmartTabLayout.setOnTabClickListener(new SmartTabLayout.OnTabClickListener() {
-                @Override
-                public void onTabClicked(int position) {
 
-                }
-            });
+            mTabs = UCTopicApplication.dataManager.tabmodel.mTabList;
+            setTabAndFragmentData();
 
+            mOriginPadding = mContext.getResources().getDimensionPixelSize(R.dimen.temperature_height);
+            setInfoY(0);
+
+            loadTab();
+            mChannelSetting.setOnClickListener(this);
         } else {
             ViewParent parent = mRootView.getParent();
             if (parent != null) {
@@ -117,6 +145,27 @@ public class InfoFragment extends Fragment {
         return mRootView;
     }
 
+
+    public void offsetTopAndBottomY(int distance) {
+        mContentLayout.offsetTopAndBottom(distance);
+    }
+
+    public float getInfoY() {
+        return mContentLayout.getY();
+    }
+
+    public void setInfoY(float distance) {
+//        ViewHelper.setScrollY(mScrollView, distance);
+        mContentLayout.setY(mOriginPadding + distance);
+        mViewPager.setPadding(0, 0, 0, mOriginPadding + (int) distance);
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v == mChannelSetting) {
+
+        }
+    }
 
     public class MyPagerAdapter extends PagerAdapter {
         @Override

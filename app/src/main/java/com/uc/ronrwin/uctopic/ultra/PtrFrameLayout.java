@@ -1,8 +1,12 @@
 package com.uc.ronrwin.uctopic.ultra;
 
+import android.animation.Animator;
+import android.animation.FloatEvaluator;
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.support.v4.view.NestedScrollingChildHelper;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Gravity;
@@ -10,11 +14,14 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
+import android.view.animation.LinearInterpolator;
 import android.widget.Scroller;
 import android.widget.TextView;
 
 import com.uc.ronrwin.uctopic.R;
 import com.uc.ronrwin.uctopic.application.UCTopicApplication;
+import com.uc.ronrwin.uctopic.ui.MainActivity;
+import com.uc.ronrwin.uctopic.ui.fragment.InfoFragment;
 import com.uc.ronrwin.uctopic.utils.ScreenUtils;
 
 /**
@@ -66,6 +73,9 @@ public class PtrFrameLayout extends ViewGroup {
 
 //    private PtrUIHandlerHook mRefreshCompleteHook;
 
+    private MainActivity mMainActivity;
+    private InfoFragment mInfoFragment;
+
     private int mLoadingMinTime = 500;
     private long mLoadingStartTime = 0;
     private PtrIndicator mPtrIndicator;
@@ -77,7 +87,9 @@ public class PtrFrameLayout extends ViewGroup {
         }
     };
 
-    private NestedScrollingChildHelper mNestedScrollingChildHelper;
+    int statusbar;
+    int originheight;
+    int changeableY;  // 可变化的数值范围，为负数
 
     public PtrFrameLayout(Context context) {
         this(context, null);
@@ -90,7 +102,9 @@ public class PtrFrameLayout extends ViewGroup {
     public PtrFrameLayout(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
 
-        mNestedScrollingChildHelper = new NestedScrollingChildHelper(this);
+        statusbar = ScreenUtils.getStatusBarHeight(UCTopicApplication.mContext);
+        originheight = UCTopicApplication.mContext.getResources().getDimensionPixelSize(R.dimen.temperature_height);
+        changeableY = statusbar - originheight;
         mPtrIndicator = new PtrIndicator();
 
         TypedArray arr = context.obtainStyledAttributes(attrs, R.styleable.PtrFrameLayout, 0, 0);
@@ -119,6 +133,14 @@ public class PtrFrameLayout extends ViewGroup {
 
         final ViewConfiguration conf = ViewConfiguration.get(getContext());
         mPagingTouchSlop = conf.getScaledTouchSlop() * 2;
+    }
+
+    public void setMainActivity(Activity ac) {
+        mMainActivity = (MainActivity) ac;
+    }
+
+    public void setInfoFragment(InfoFragment fragment) {
+        mInfoFragment = fragment;
     }
 
     @Override
@@ -284,6 +306,43 @@ public class PtrFrameLayout extends ViewGroup {
 
     boolean needRecountDown;
 
+    float clickY;
+    float currentY;
+
+
+    private void animTemperatureMove(final boolean isUp, final float offset) {
+        // offset为实际显示时的大小
+        long duration = 300;
+        ValueAnimator va = new ObjectAnimator();
+        va.setObjectValues(new Float(0));
+        va.setInterpolator(new LinearInterpolator());
+        va.setEvaluator(new FloatEvaluator() {
+            @Override
+            public Float evaluate(float fraction, Number startValue, Number endValue) {
+                if (isUp) {
+                    return offset * (1 - fraction);
+                } else {
+                    return offset + (1 - offset) * fraction;
+                }
+            }
+        });
+        va.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                Float ff = (Float) animation.getAnimatedValue();
+                float ss = (1 - ff) * changeableY;
+                mMainActivity.setTemperatureTopY(ss);
+                mInfoFragment.setInfoY(ss);
+            }
+        });
+        if (isUp) {
+            va.setDuration((long) (offset * duration));
+        } else {
+            va.setDuration((long) (duration - offset * duration));
+        }
+        va.start();
+    }
+
     @Override
     public boolean dispatchTouchEvent(MotionEvent e) {
         if (!isEnabled() || mContent == null || mHeaderView == null) {
@@ -296,10 +355,21 @@ public class PtrFrameLayout extends ViewGroup {
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
                 mPtrIndicator.onRelease();
+
+                if (mMainActivity != null && mInfoFragment != null) {
+                    currentY = mMainActivity.getTemperatureTopY();
+                    int middleY = changeableY / 2;
+                    if (currentY > middleY && currentY < 0) {
+                        animTemperatureMove(false, 1 - currentY / changeableY);
+                        return true;
+                    }
+                    if (currentY < middleY && currentY > changeableY) {
+                        animTemperatureMove(true, 1 - currentY / changeableY);
+                        return true;
+                    }
+                }
+
                 if (mPtrIndicator.hasLeftStartPosition()) {
-//                    if (DEBUG) {
-//                        PtrCLog.d(LOG_TAG, "call onRelease when user release");
-//                    }
                     onRelease(false);
                     if (mPtrIndicator.hasMovedAfterPressedDown()) {
                         sendCancelEvent();
@@ -309,8 +379,8 @@ public class PtrFrameLayout extends ViewGroup {
                 } else {
                     return dispatchTouchEventSupper(e);
                 }
-
             case MotionEvent.ACTION_DOWN:
+                clickY = e.getRawY();
                 mHasSendCancelEvent = false;
                 mPtrIndicator.onPressDown(e.getX(), e.getY());
 
@@ -333,55 +403,64 @@ public class PtrFrameLayout extends ViewGroup {
                 boolean moveDown = offsetY > 0;
                 boolean moveUp = !moveDown;
 
-                int height = UCTopicApplication.mContext.getResources().getDimensionPixelSize(R.dimen.temperature_height)
-                        - ScreenUtils.getStatusBarHeight(UCTopicApplication.mContext);
+                boolean canMainScroll = mMainActivity != null && mInfoFragment != null;
+                float targetY = 0;
+                float disY = 0;
+                if (canMainScroll) {
+                    disY = e.getRawY() - clickY;
+                    currentY = mMainActivity.getTemperatureTopY();
+                    targetY = disY + currentY;
+                }
+                if (canMainScroll) {
+                    if (moveUp) {
+                        // 处于可变范围内
+                        if (targetY >= changeableY && targetY <= 0) {
+                            mMainActivity.setTemperatureTopY(targetY);
+                            mInfoFragment.setInfoY(targetY);
+                            clickY = e.getRawY();
+                            return true;
+                        }
 
-//                if (mInfoFragment != null && moveUp) {
-//                    // 上拉。
-//                    if (mInfoFragment.currentY > -height) {
-//                        if (mStatus != PTR_STATUS_PREPARE) {
-//                            // 天气区域可上拉。上拉天气区域，拦截事件
-//                            mInfoFragment.mScrollView.offsetTopAndBottom((int) offsetY);
-//                            return true;
-//                        } else {
-//                            // 不拦截
-//                        }
-//                    } else {
-//                        // 天气区域上拉完，
-//                        if (mInfoFragment.currentY < -height) {
-//                            mInfoFragment.currentY = -height;
-//                            mInfoFragment.mScrollView.setY(-height);    // 固定位置
-//                        }
-////                        return dispatchTouchEventSupper(e);
-//                        return true;
-//                    }
-//                } else {
-//                    // 下拉
-//                    if (mPtrHandler != null && !mPtrHandler.checkCanDoRefresh(this, mContent, mHeaderView)) {
-//                        // 列表操作。
-//                        return dispatchTouchEventSupper(e);
-//                    } else {
-//                        if (mInfoFragment.currentY < 0) {
-//                            // 天气区域可下拉。拦截下拉刷新
-//                            mInfoFragment.mScrollView.offsetTopAndBottom((int) offsetY);
-//                            return true;
-//                        } else {
-//                            if (mInfoFragment.currentY > 0) {
-//                                mInfoFragment.currentY = 0;
-//                                mInfoFragment.mScrollView.setY(0);    // 固定位置
-//                            }
-//                            // 天气区域下拉完，刷新区域可见
-//                        }
-//                    }
-//                }
+                        if (targetY < changeableY) {
+                            mMainActivity.setTemperatureTopY(changeableY);
+                            mInfoFragment.setInfoY(changeableY);
+                        }
+                        if (targetY > 0) {
+                            mMainActivity.setTemperatureTopY(0);
+                            mInfoFragment.setInfoY(0);
+                        }
+                    }
+                }
 
                 if (mPtrHandler != null && !mPtrHandler.checkCanDoRefresh(this, mContent, mHeaderView)) {
                     needRecountDown = true;
+                    clickY = e.getRawY();
                     return dispatchTouchEventSupper(e);
                 } else {
+                    // 下拉至可刷新，则下拉天气框
+                    if (canMainScroll) {
+                        if (moveDown) {
+                            // 处于可变范围内
+                            if (targetY >= changeableY && targetY <= 0) {
+                                mMainActivity.setTemperatureTopY(targetY);
+                                mInfoFragment.setInfoY(targetY);
+                                clickY = e.getRawY();
+                                return true;
+                            }
+                            if (targetY < changeableY) {
+                                mMainActivity.setTemperatureTopY(changeableY);
+                                mInfoFragment.setInfoY(changeableY);
+                            }
+                            if (targetY > 0) {
+                                mMainActivity.setTemperatureTopY(0);
+                                mInfoFragment.setInfoY(0);
+                            }
+                        }
+                    }
                     if (needRecountDown) {
                         needRecountDown = false;
                         mPtrIndicator.onPressDown(e.getX(), e.getY());
+                        clickY = e.getRawY();
                         return dispatchTouchEventSupper(e);
                     }
                 }
@@ -1086,50 +1165,4 @@ public class PtrFrameLayout extends ViewGroup {
         }
     }
 
-//    // TODO: 2016/6/1
-//
-//    @Override
-//    public void setNestedScrollingEnabled(boolean enabled) {
-//        mNestedScrollingChildHelper.setNestedScrollingEnabled(enabled);
-//    }
-//
-//    @Override
-//    public boolean isNestedScrollingEnabled() {
-//        return mNestedScrollingChildHelper.isNestedScrollingEnabled();
-//    }
-//
-//    @Override
-//    public boolean startNestedScroll(int axes) {
-//        return mNestedScrollingChildHelper.startNestedScroll(axes);
-//    }
-//
-//    @Override
-//    public void stopNestedScroll() {
-//        mNestedScrollingChildHelper.stopNestedScroll();
-//    }
-//
-//    @Override
-//    public boolean hasNestedScrollingParent() {
-//        return mNestedScrollingChildHelper.hasNestedScrollingParent();
-//    }
-//
-//    @Override
-//    public boolean dispatchNestedScroll(int dxConsumed, int dyConsumed, int dxUnconsumed, int dyUnconsumed, int[] offsetInWindow) {
-//        return mNestedScrollingChildHelper.dispatchNestedScroll(dxConsumed, dyConsumed, dxUnconsumed, dyUnconsumed, offsetInWindow);
-//    }
-//
-//    @Override
-//    public boolean dispatchNestedPreScroll(int dx, int dy, int[] consumed, int[] offsetInWindow) {
-//        return mNestedScrollingChildHelper.dispatchNestedPreScroll(dx, dy, consumed, offsetInWindow);
-//    }
-//
-//    @Override
-//    public boolean dispatchNestedFling(float velocityX, float velocityY, boolean consumed) {
-//        return mNestedScrollingChildHelper.dispatchNestedFling(velocityX, velocityY, consumed);
-//    }
-//
-//    @Override
-//    public boolean dispatchNestedPreFling(float velocityX, float velocityY) {
-//        return mNestedScrollingChildHelper.dispatchNestedPreFling(velocityX, velocityY);
-//    }
 }

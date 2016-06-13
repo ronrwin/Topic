@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -128,16 +129,16 @@
 
         <TextView
             android:id="@+id/temperature"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/temperature_height"
             android:layout_gravity="center_horizontal"
-            android:paddingTop="10dp"
+            android:gravity="bottom|center_horizontal"
+            android:paddingBottom="10dp"
             android:scaleY="1.3"
             android:text="@string/temperature"
             android:textColor="@color/temperature_black"
             android:textSize="36dp"
-            android:textStyle="bold"
-            android:translationY="40dp" />
+            android:textStyle="bold" />
 
         <LinearLayout
             android:id="@+id/location_layout"
@@ -247,5 +248,24 @@
             </LinearLayout>
         </LinearLayout>
 
+        <ImageView
+            android:id="@+id/temperature_num"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:src="@drawable/temperature_num" />
     </FrameLayout>
+
+    <RelativeLayout
+        android:id="@+id/transition_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/black_alpha"
+        android:visibility="gone">
+
+        <View
+            android:id="@+id/transition_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/white" />
+    </RelativeLayout>
 </RelativeLayout>

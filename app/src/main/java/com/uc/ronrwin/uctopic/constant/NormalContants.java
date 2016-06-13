@@ -19,12 +19,22 @@ public class NormalContants {
         String LOGIN_TAG = "login_tag";
     }
 
-    public  interface CardType {
-        String TOPIC_CARD_1 = "topic_card_1";
-        String TOPIC_CARD_2 = "topic_card_2";
-        String TOPIC_CARD_3 = "topic_card_3";
+    public interface CardType {
+        int TOPIC_CARD_1 = 1;
+        int TOPIC_CARD_2 = 2;
+        int TOPIC_CARD_3 = 3;
         String VIDEO_CARD = "viceo_card";
     }
 
+    public interface RequestCode {
+        int LOAD_TAB = 1001;
+        int GET_TOPIC = 1002;
+    }
+
+    public interface RequestName {
+        String GET_TAB = "getTabDatas";
+        String GET_TOPIC = "getTopics";
+        String GET_VIDEO = "getVideos";
+    }
 
 }

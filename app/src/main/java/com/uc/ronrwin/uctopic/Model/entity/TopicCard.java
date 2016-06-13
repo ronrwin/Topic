@@ -1,7 +1,8 @@
-package com.uc.ronrwin.uctopic.Model.entity;
+package com.uc.ronrwin.uctopic.model.entity;
 
-import com.uc.ronrwin.uctopic.Model.base.IBaseEntityBuilder;
+import com.uc.ronrwin.uctopic.model.base.IBaseEntityBuilder;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -54,5 +55,30 @@ public class TopicCard extends BaseCard implements IBaseEntityBuilder<TopicCard>
     @Override
     public TopicCard create(JSONObject jsonObject) {
         return new TopicCard(jsonObject);
+    }
+
+    @Override
+    public String toString() {
+        JSONObject json = new JSONObject();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < images.size(); i++) {
+            String s = images.get(i);
+            sb.append(s);
+            if (i < images.size() - 1) {
+                sb.append("\\|\\|");
+            }
+        }
+
+        try {
+            json.put("typeId", typeId);
+            json.put("title", title);
+            json.put("createtime", createtime);
+            json.put("url", url);
+            json.put("fromMedia", fromMedia);
+            json.put("images", sb.toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return json.toString();
     }
 }

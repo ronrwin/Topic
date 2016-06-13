@@ -1,5 +1,8 @@
 package com.uc.ronrwin.uctopic.ui.fragment;
 
+import android.animation.Animator;
+import android.animation.ObjectAnimator;
+import android.animation.PropertyValuesHolder;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -13,6 +16,7 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import com.uc.ronrwin.uctopic.R;
+import com.uc.ronrwin.uctopic.ui.MainActivity;
 import com.uc.ronrwin.uctopic.utils.ScreenUtils;
 
 /**
@@ -23,7 +27,7 @@ import com.uc.ronrwin.uctopic.utils.ScreenUtils;
  * Creation    : 2016/5/24
  * Author      : Ronrwin
  */
-public class LoginFragment extends Fragment {
+public class LoginFragment extends Fragment implements View.OnClickListener{
 
     protected View mRootView;
     protected Context mContext;
@@ -55,6 +59,9 @@ public class LoginFragment extends Fragment {
             if (displayMetrics.heightPixels > displayMetrics.widthPixels) {
                 mBackgroud.setLayoutParams(new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, displayMetrics.widthPixels));
             }
+
+            mCircleLayout.setOnClickListener(this);
+
             mBackgroud.post(new Runnable() {
                 @Override
                 public void run() {
@@ -70,5 +77,31 @@ public class LoginFragment extends Fragment {
         }
         return mRootView;
     }
+
+    public void changeLoginNormalAnim() {
+        if (((MainActivity)getActivity()).mLoginNormalShow) {
+            ((MainActivity)getActivity()).mLoginNormalShow = false;
+            PropertyValuesHolder scaleX = PropertyValuesHolder.ofFloat("scaleX", 1f, 1.1f, 0f);
+            PropertyValuesHolder scaleY = PropertyValuesHolder.ofFloat("scaleY", 1f, 1.1f, 0f);
+            Animator small = ObjectAnimator.ofPropertyValuesHolder(mCircleLayout, scaleX, scaleY);
+            small.setDuration(500);
+            small.start();
+        } else {
+            ((MainActivity)getActivity()).mLoginNormalShow = true;
+            PropertyValuesHolder scaleX = PropertyValuesHolder.ofFloat("scaleX", 0f, 1f);
+            PropertyValuesHolder scaleY = PropertyValuesHolder.ofFloat("scaleY", 0f, 1f);
+            Animator bigger = ObjectAnimator.ofPropertyValuesHolder(mCircleLayout, scaleX, scaleY);
+            bigger.setDuration(500);
+            bigger.start();
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        if (v == mCircleLayout) {
+            changeLoginNormalAnim();
+        }
+    }
+
 
 }

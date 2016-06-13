@@ -1,6 +1,7 @@
 package com.uc.ronrwin.uctopic.ui.fragment;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -36,7 +37,7 @@ import com.uc.ronrwin.uctopic.widget.PercentCircle;
  * Creation    : 2016/5/24
  * Author      : Ronrwin
  */
-public class BaseListFragment extends Fragment {
+public abstract class BaseListFragment extends Fragment {
 
     protected View mRootView;
     protected Context mContext;
@@ -44,6 +45,7 @@ public class BaseListFragment extends Fragment {
     protected ViewGroup mLayout;
 
     protected RecyclerView mRecyclerView;
+    protected LinearLayoutManager mLinearLayoutManager;
     protected PtrFrameLayout mFrameLayout;
 
     protected PtrTensionIndicator mPtrTensionIndicator;
@@ -52,14 +54,12 @@ public class BaseListFragment extends Fragment {
     protected PercentCircle mPercentCircle;
     protected TextView mRefreshText;
 
-    public BaseListFragment() {
-    }
+    protected SharedPreferences mRefreshTimePrefrenced;
+    protected long mLastUpdate;
+    protected final String LAST_UPDATE = "last_update_";
 
-    public static BaseListFragment newInstance(Bundle bundle) {
-        BaseListFragment fragment = new BaseListFragment();
-        fragment.setArguments(bundle);
-        return fragment;
-    }
+    abstract void refreshLoad();
+    abstract void refreshPrepare();
 
     @Nullable
     @Override
@@ -70,6 +70,9 @@ public class BaseListFragment extends Fragment {
             mFrameLayout = (PtrFrameLayout) mRootView.findViewById(R.id.material_style_ptr_frame);
             mRecyclerView = (RecyclerView) mRootView.findViewById(R.id.recyclerView);
             mLayout = (ViewGroup) mRootView.findViewById(R.id.list_layout);
+
+            mLinearLayoutManager = new LinearLayoutManager(mContext);
+            mRecyclerView.setLayoutManager(mLinearLayoutManager);
 
             mPtrTensionIndicator = new PtrTensionIndicator();
             mHeader = LayoutInflater.from(mContext).inflate(R.layout.refresh_layout, null);
@@ -84,17 +87,15 @@ public class BaseListFragment extends Fragment {
             mFrameLayout.addPtrUIHandler(new PtrUIHandler() {
                 @Override
                 public void onUIReset(PtrFrameLayout frame) {
-                    Log.d("test", "onUIReset");
                 }
 
                 @Override
                 public void onUIRefreshPrepare(PtrFrameLayout frame) {
-                    Log.d("test", "onUIRefreshPrepare");
+                    refreshPrepare();
                 }
 
                 @Override
                 public void onUIRefreshBegin(PtrFrameLayout frame) {
-                    Log.d("test", "onUIRefreshBegin");
                     Animation a = new RotateAnimation(0, 360, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
                     a.setDuration(500);
                     a.setRepeatCount(Animation.INFINITE);
@@ -104,7 +105,6 @@ public class BaseListFragment extends Fragment {
 
                 @Override
                 public void onUIRefreshComplete(PtrFrameLayout frame) {
-                    Log.d("test", "onUIRefreshComplete");
                     mPercentCircle.clearAnimation();
                 }
 
@@ -113,18 +113,31 @@ public class BaseListFragment extends Fragment {
                     float percent = mPtrTensionIndicator.getOverDragPercent();
                     int currentY = mPtrTensionIndicator.getCurrentPosY();
                     int paddingTop = mHeader.getPaddingTop();
-                    int smallOffset = (int) (paddingTop * percent);
-                    float circlePercent = (float) currentY / (float) (mPercentCircle.getHeight() + smallOffset);
-                    int headerNeedScrollY = -mHeader.getMeasuredHeight() + currentY + paddingTop - smallOffset;
-                    ViewHelper.setScrollY(mHeader, headerNeedScrollY);
-                    ViewHelper.setAlpha(mHeader, percent);
-                    mPercentCircle.setPercent(circlePercent);
+                    if (isUnderTouch) {
+                        int smallOffset = (int) (paddingTop * percent);
+                        float circlePercent = (float) currentY / (float) (mPercentCircle.getHeight() + smallOffset);
+                        int headerNeedScrollY = -mHeader.getMeasuredHeight() + currentY + paddingTop - smallOffset;
+                        ViewHelper.setScrollY(mHeader, headerNeedScrollY);
+                        ViewHelper.setAlpha(mHeader, percent);
+                        mPercentCircle.setPercent(circlePercent);
 
-                    if (circlePercent >= 1f) {
-                        int extraHeight = mHeader.getMeasuredHeight() - mRefreshText.getTop();
-                        if (headerNeedScrollY < 0) {
-                            float alpha = (float) headerNeedScrollY / (float) extraHeight;
-                            mPercentCircle.setAlpha(alpha);
+                        if (circlePercent >= 1f) {
+                            int extraHeight = mHeader.getMeasuredHeight() - mRefreshText.getTop();
+                            if (headerNeedScrollY < 0) {
+                                float alpha = (float) headerNeedScrollY / (float) extraHeight;
+                                mPercentCircle.setAlpha(alpha);
+                            }
+                        }
+                    } else {
+                        float circlePercent = (float) currentY / (float) mPercentCircle.getHeight();
+                        mPercentCircle.setPercent(circlePercent);
+                        int headerNeedScrollY = -mHeader.getMeasuredHeight() + currentY;
+                        if (circlePercent >= 1f) {
+                            int extraHeight = mHeader.getMeasuredHeight() - mRefreshText.getTop();
+                            if (headerNeedScrollY < 0) {
+                                float alpha = (float) headerNeedScrollY / (float) extraHeight;
+                                mPercentCircle.setAlpha(alpha);
+                            }
                         }
                     }
                 }
@@ -140,13 +153,7 @@ public class BaseListFragment extends Fragment {
 
                 @Override
                 public void onRefreshBegin(final PtrFrameLayout frame) {
-                    long delay = 1500;
-                    frame.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            frame.refreshComplete();
-                        }
-                    }, delay);
+                    refreshLoad();
                 }
             });
         } else {

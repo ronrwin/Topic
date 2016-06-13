@@ -7,11 +7,16 @@
     <color name="white">#ffffff</color>
     <color name="theme">#ffc63f</color>
     <color name="default_item">#eeeeee</color>
+    <color name="default_item_bg">#fbfbfb</color>
     <color name="black_alpha">#88000000</color>
+    <color name="white_alpha">#88ffffff</color>
     <color name="gray_1">#aaaaaa</color>
     <color name="temperature_black">#222222</color>
     <color name="video_extra_bg">#17181a</color>
     <color name="video_support_color">#303133</color>
+    <color name="topic_title_color">#6f747b</color>
+    <color name="topic_time">#b9bcbf</color>
+    <color name="comment_edit_bg">#143B424C</color>
 
     <color name="light_blue_500">#03A9F4</color>
     <color name="cyan_500">#00BCD4</color>

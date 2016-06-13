@@ -1,7 +1,8 @@
-package com.uc.ronrwin.uctopic.Model.entity;
+package com.uc.ronrwin.uctopic.model.entity;
 
-import com.uc.ronrwin.uctopic.Model.base.IBaseEntityBuilder;
+import com.uc.ronrwin.uctopic.model.base.IBaseEntityBuilder;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -21,8 +22,10 @@ public class VideoCard extends BaseCard implements IBaseEntityBuilder<VideoCard>
     public String videoUrl;
 
     private static VideoCard mBuilder;
+    public boolean isPlaying = false;
 
-    public VideoCard() {}
+    public VideoCard() {
+    }
 
     public VideoCard(JSONObject json) {
         super(json);
@@ -50,4 +53,23 @@ public class VideoCard extends BaseCard implements IBaseEntityBuilder<VideoCard>
         }
         return mBuilder;
     }
+
+    @Override
+    public String toString() {
+        JSONObject json = new JSONObject();
+
+        try {
+            json.put("typeId", typeId);
+            json.put("title", title);
+            json.put("createtime", createtime);
+            json.put("duration", duration);
+            json.put("followNum", followNum);
+            json.put("thumbnailUrl", thumbnailUrl);
+            json.put("videoUrl", videoUrl);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return json.toString();
+    }
+
 }

@@ -7,46 +7,21 @@
     android:orientation="vertical"
     android:paddingBottom="10dp">
 
-    <RelativeLayout
+    <com.uc.ronrwin.uctopic.widget.MyVideo
+        android:id="@+id/myvideo"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/video_height"
-        android:background="@android:color/black">
+        android:layout_height="@dimen/video_height">
 
-        <ImageView
-            android:id="@+id/thumb"
+        <View
+            android:id="@+id/mask"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scaleType="fitXY"
-            android:src="@drawable/infoflow_unlogin_background" />
-
-        <com.uc.ronrwin.uctopic.widget.ColorPoint
-            android:id="@+id/video_anim_bg"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_centerInParent="true"
-            android:scaleX="0"
-            android:scaleY="0"
-            app:color="@color/black_alpha" />
-
-        <ImageView
-            android:id="@+id/video_resume"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_centerInParent="true"
-            android:src="@drawable/icon_video_resume" />
-
-        <com.uc.ronrwin.uctopic.widget.ColorPoint
-            android:id="@+id/play_anim"
-            android:layout_width="15dp"
-            android:layout_height="15dp"
-            android:layout_centerInParent="true"
-            app:color="@color/white" />
-
-    </RelativeLayout>
+            android:background="@color/black_alpha" />
+    </com.uc.ronrwin.uctopic.widget.MyVideo>
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="@dimen/video_extra_height"
         android:background="@color/video_extra_bg">
 
         <ImageView
@@ -88,5 +63,6 @@
             android:layout_height="match_parent"
             android:background="@color/black_alpha" />
     </RelativeLayout>
+
 </LinearLayout>
 

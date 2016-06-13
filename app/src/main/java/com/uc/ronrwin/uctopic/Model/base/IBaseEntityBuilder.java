@@ -1,4 +1,4 @@
-package com.uc.ronrwin.uctopic.Model.base;
+package com.uc.ronrwin.uctopic.model.base;
 
 import org.json.JSONObject;
 

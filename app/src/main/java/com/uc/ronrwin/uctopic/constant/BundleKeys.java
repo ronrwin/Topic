@@ -11,4 +11,6 @@ package com.uc.ronrwin.uctopic.constant;
 
 public class BundleKeys {
     public static final String FRAGMENT_TYPE = "fragment_type";
+
+    public static final String TITLE = "title";
 }

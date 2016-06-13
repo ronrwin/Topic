@@ -2,11 +2,14 @@ package com.uc.ronrwin.uctopic.ui;
 
 import android.animation.Animator;
 import android.animation.AnimatorSet;
+import android.animation.FloatEvaluator;
 import android.animation.IntEvaluator;
 import android.animation.ObjectAnimator;
 import android.animation.PropertyValuesHolder;
 import android.animation.ValueAnimator;
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -14,21 +17,38 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.nineoldandroids.view.ViewHelper;
 import com.uc.ronrwin.uctopic.R;
+import com.uc.ronrwin.uctopic.application.UCTopicApplication;
 import com.uc.ronrwin.uctopic.constant.BundleKeys;
 import com.uc.ronrwin.uctopic.constant.NormalContants;
+import com.uc.ronrwin.uctopic.http.OkHttpUtils;
+import com.uc.ronrwin.uctopic.model.TabModel;
+import com.uc.ronrwin.uctopic.model.base.MetaServerData;
+import com.uc.ronrwin.uctopic.model.entity.TabEntity;
 import com.uc.ronrwin.uctopic.ui.fragment.InfoFragment;
 import com.uc.ronrwin.uctopic.ui.fragment.LoginFragment;
 import com.uc.ronrwin.uctopic.ui.fragment.VideoFragment;
+import com.uc.ronrwin.uctopic.utils.ScreenUtils;
 import com.uc.ronrwin.uctopic.widget.CloseTemperatureLayout;
-import com.uc.ronrwin.uctopic.widget.ColorPoint;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.util.ArrayList;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.Response;
 
 public class MainActivity extends FragmentActivity implements View.OnClickListener {
 
@@ -45,8 +65,9 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 
     private float mAnimStartAlpha = -0.5f;
 
+    public ViewGroup mMainLayout;
     private View mMainMask;
-    private ViewGroup mTemperatureLayout;
+    public ViewGroup mTemperatureLayout;
 
     public TextView mTemperature;
     private int mOriginTemperatureHeight;
@@ -60,6 +81,9 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
     private ViewGroup mAirLayout;
     private CloseTemperatureLayout mCloseTemperatureLayout;
     private View mTemperatureAnimBackgroud;
+    private View mTransitionView;
+    private ViewGroup mTransitionLayout;
+    private ImageView mTemperatureNum;
 
     private float mOriginTemperatureY;
     private float mOriginTemperatureDescY;
@@ -67,22 +91,33 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
     private float mOriginTemperatureExtraY;
     private float mOriginCloseTemperatureLayoutY;
     private float mOriginTemperatureAnimBackgroudY;
+    private float mOriginTemperatureNumY;
+
+    public boolean mLoginNormalShow = true;
+
+    private int mChangeableHeight;
+
+//    private TabModel mTabModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = this;
         if (Build.VERSION.SDK_INT >= 21) {
-            getWindow().setStatusBarColor(mContext.getResources().getColor(R.color.black_alpha));
+            getWindow().getDecorView().setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+//            getWindow().setStatusBarColor(mContext.getResources().getColor(R.color.black_alpha));
         }
         setContentView(R.layout.activity_main);
         mOriginTemperatureHeight = mContext.getResources().getDimensionPixelSize(R.dimen.temperature_height);
+        mChangeableHeight = ScreenUtils.getStatusBarHeight(mContext) - mOriginTemperatureHeight;
 
         initView();
     }
 
     private void initView() {
         mFragmentManager = getSupportFragmentManager();
+        mMainLayout = (ViewGroup) findViewById(R.id.main_layout);
         mNavigation = (ViewGroup) findViewById(R.id.navigation);
         mTopicTab = (ViewGroup) findViewById(R.id.topic_tab);
         mVideoTab = (ViewGroup) findViewById(R.id.video_tab);
@@ -102,7 +137,9 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
         mCloseTemperatureLayout = (CloseTemperatureLayout) findViewById(R.id.close_button);
         mTemperatureAnimBackgroud = findViewById(R.id.backgroud);
         mMainMask = findViewById(R.id.main_mask);
-
+        mTransitionView = findViewById(R.id.transition_view);
+        mTransitionLayout = (ViewGroup) findViewById(R.id.transition_layout);
+        mTemperatureNum = (ImageView) findViewById(R.id.temperature_num);
 
         mTopicTab.setOnClickListener(this);
         mVideoTab.setOnClickListener(this);
@@ -120,15 +157,16 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
                 ViewHelper.setScrollY(mTemperatureIcon, mTemperatureIcon.getHeight() / 2);
                 mLocationLayout.setY(mOriginTemperatureHeight);
                 mTemperatureExtra.setY(mOriginTemperatureHeight);
-                mLocationLayout.setAlpha(0);
-                mMainMask.setAlpha(0);
-                mTemperatureExtra.setAlpha(0);
+                mLocationLayout.setAlpha(mAnimStartAlpha);
+                mMainMask.setAlpha(mAnimStartAlpha);
+                mTemperatureExtra.setAlpha(mAnimStartAlpha);
+                mTemperatureNum.setAlpha(mAnimStartAlpha);
                 mWindLayout.setX(halfWidth / 2 - mWindLayout.getWidth() / 2);
                 mWeahterLayout.setX(halfWidth - mWeahterLayout.getWidth() / 2);
                 mAirLayout.setX(halfWidth + halfWidth / 2 - mAirLayout.getWidth() / 2);
                 mCloseTemperatureLayout.setY(-mCloseTemperatureLayout.getHeight());
                 mTemperatureAnimBackgroud.setY(-mTemperatureAnimBackgroud.getHeight() + mCloseTemperatureLayout.getY());
-
+                mTemperatureNum.setY(mOriginTemperatureHeight);
 
                 mOriginTemperatureDescY = mTemperatureDesc.getY();
                 mOriginTemperatureY = mTemperature.getY();
@@ -136,10 +174,82 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
                 mOriginTemperatureExtraY = mTemperatureExtra.getY();
                 mOriginCloseTemperatureLayoutY = mCloseTemperatureLayout.getY();
                 mOriginTemperatureAnimBackgroudY = mTemperatureAnimBackgroud.getY();
+                mOriginTemperatureNumY = mTemperatureNum.getY();
+
+                mTemperatureNum.getLayoutParams().height = mTemperatureLayout.getHeight() - mTemperatureLayout.getHeight() / 4
+                        - mCloseTemperatureLayout.getHeight()
+                        - mTemperatureExtra.getHeight() -mLocationLayout.getHeight() - mTemperature.getHeight();
+                mTemperatureNum.requestLayout();
             }
         });
 
         selectTab(0);
+    }
+
+    public float getTemperatureTopY() {
+        return mTemperature.getY();
+    }
+
+    public void setTemperatureTopY(float distance) {
+        mTemperatureIcon.setY(distance);
+        mTemperature.setY(distance);
+
+        float offset = 1 - distance / mChangeableHeight;
+        mTemperature.setAlpha(offset);
+        mTemperature.setScaleX(0.7f + 0.3f * offset);
+        mTemperature.setScaleY(1.3f * (0.7f + 0.3f * offset));
+    }
+
+    public void startTransition(View origintView, final String url) {
+        mTransitionLayout.setVisibility(View.VISIBLE);
+        mTransitionLayout.setAlpha(1f);
+        int height = origintView.getMeasuredHeight();
+        int mainHeight = mMainLayout.getHeight();
+        float scaleY = (float) mMainLayout.getHeight() / (float) height;
+        int[] locations = new int[2];
+        origintView.getLocationInWindow(locations);
+        mTransitionView.setY(locations[1]);
+        mTransitionView.getLayoutParams().height = height;
+        mTransitionView.requestLayout();
+
+        PropertyValuesHolder scale = PropertyValuesHolder.ofFloat("scaleY", 1f, scaleY);
+        PropertyValuesHolder holder2 = PropertyValuesHolder.ofFloat("Y", locations[1], mainHeight / 2 - height / 2);
+        Animator a = ObjectAnimator.ofPropertyValuesHolder(mTransitionView, scale, holder2);
+        a.setDuration(500);
+        a.start();
+        a.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                Intent i = new Intent(mContext, WebActivity.class);
+                i.putExtra("url", url);
+                MainActivity.this.startActivityForResult(i, 1000);
+
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+
+            }
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {
+
+            }
+        });
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == Activity.RESULT_OK) {
+            mTransitionLayout.setVisibility(View.GONE);
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     private Animator valueCloseLayout(final boolean isOpen) {
@@ -164,6 +274,21 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
             }
         });
         return va;
+    }
+
+    private Animator openTemperatureNum(boolean isOpen) {
+        if (isOpen) {
+            PropertyValuesHolder alpha = PropertyValuesHolder.ofFloat("alpha", mAnimStartAlpha, 1f);
+            PropertyValuesHolder holder2 = PropertyValuesHolder.ofFloat("Y",
+                    mTemperatureLayout.getHeight() / 4 + mTemperature.getHeight() + mLocationLayout.getHeight() + mTemperatureExtra.getHeight());
+            Animator a = ObjectAnimator.ofPropertyValuesHolder(mTemperatureNum, alpha, holder2);
+            return a;
+        } else {
+            PropertyValuesHolder alpha = PropertyValuesHolder.ofFloat("alpha", 1f, mAnimStartAlpha);
+            PropertyValuesHolder holder2 = PropertyValuesHolder.ofFloat("Y", mOriginTemperatureNumY);
+            Animator close = ObjectAnimator.ofPropertyValuesHolder(mTemperatureNum, alpha, holder2);
+            return close;
+        }
     }
 
     private Animator openTemperatureExtra(boolean isOpen) {
@@ -258,6 +383,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
                 .with(openTemperatureExtra(false))
                 .with(valueCloseLayout(false))
                 .with(openCloseLayout(false))
+                .with(openTemperatureNum(false))
                 .with((openTemperatyreBackground(false)));
         set.setDuration(DURATION);
         set.addListener(new Animator.AnimatorListener() {
@@ -304,6 +430,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
                         .with(openTemperatureExtra(true))
                         .with(valueCloseLayout(true))
                         .with(openCloseLayout(true))
+                        .with(openTemperatureNum(true))
                         .with((openTemperatyreBackground(true)));
                 set.start();
             }
@@ -327,8 +454,8 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
         FragmentTransaction fragmentTransaction = mFragmentManager.beginTransaction();
 
         if (currentFragment != null && !mCurrentTag.equals(tag)) {
-            fragmentTransaction.detach(currentFragment);
-//            fragmentTransaction.hide(currentFragment);
+//            fragmentTransaction.detach(currentFragment);
+            fragmentTransaction.hide(currentFragment);
         }
 
         if (addFragment == null) {
@@ -342,8 +469,8 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
                 fragmentTransaction.add(R.id.main_fragment_stub, LoginFragment.newInstance(null), NormalContants.FragmentTag.LOGIN_TAG);
             }
         } else {
-            fragmentTransaction.attach(addFragment);
-//            fragmentTransaction.show(addFragment);
+//            fragmentTransaction.attach(addFragment);
+            fragmentTransaction.show(addFragment);
         }
 
         mCurrentTag = tag;
@@ -361,10 +488,6 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
             mVideoTab.setSelected(false);
             mLoginTab.setSelected(false);
             mTemperatureLayout.setVisibility(View.VISIBLE);
-            if (Build.VERSION.SDK_INT >= 21) {
-                getWindow().getDecorView().setSystemUiVisibility(
-                        View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
-            }
             transFragment(NormalContants.FragmentTag.TOPIC_TAG);
         } else if (index == 1) {
             mNavigation.setBackgroundColor(Color.BLACK);
@@ -375,11 +498,6 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
             mVideoTab.setSelected(true);
             mLoginTab.setSelected(false);
             mTemperatureLayout.setVisibility(View.GONE);
-            if (Build.VERSION.SDK_INT >= 21) {
-                getWindow().getDecorView().setSystemUiVisibility(
-                        View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
-            }
-
             transFragment(NormalContants.FragmentTag.VIDEO_TAG);
         } else if (index == 2) {
             mNavigation.setBackgroundColor(Color.WHITE);
@@ -390,11 +508,6 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
             mVideoTab.setSelected(false);
             mLoginTab.setSelected(true);
             mTemperatureLayout.setVisibility(View.GONE);
-
-            if (Build.VERSION.SDK_INT >= 21) {
-                getWindow().getDecorView().setSystemUiVisibility(
-                        View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
-            }
             transFragment(NormalContants.FragmentTag.LOGIN_TAG);
         }
     }
@@ -403,6 +516,12 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
     public void onBackPressed() {
         if (mOpenFlag) {
             mCloseTemperatureLayout.performClick();
+            return;
+        } else if (!mLoginNormalShow) {
+            if (mCurrentTag.equals(NormalContants.FragmentTag.LOGIN_TAG)) {
+                LoginFragment currentFragment = (LoginFragment) mFragmentManager.findFragmentByTag(mCurrentTag);
+                currentFragment.changeLoginNormalAnim();
+            }
             return;
         }
         super.onBackPressed();
