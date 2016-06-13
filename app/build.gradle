@@ -27,8 +27,8 @@ dependencies {
     //    compile 'org.kymjs.kjframe:kjframe:2.6'
     compile 'com.android.support:recyclerview-v7:23.3.0'
     compile 'com.squareup.okhttp3:okhttp:3.2.0'
-    compile 'com.android.support:design:24.0.0-beta1'
     compile 'com.nineoldandroids:library:2.4.0'
     compile 'com.squareup.picasso:picasso:2.3.2'
+    compile 'de.greenrobot:eventbus:3.0.0-beta1'
 }
 

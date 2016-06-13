@@ -16,14 +16,14 @@ import com.uc.ronrwin.uctopic.widget.SwipeBackLayout;
  *
  */
 public class SwipeBackActivity extends Activity {
-	protected SwipeBackLayout layout;
+	protected SwipeBackLayout mSwipeBackLayout;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		layout = (SwipeBackLayout) LayoutInflater.from(this).inflate(
+		mSwipeBackLayout = (SwipeBackLayout) LayoutInflater.from(this).inflate(
 				R.layout.base, null);
-		layout.attachToActivity(this);
+		mSwipeBackLayout.attachToActivity(this);
 	}
 
 	protected void enterAnimation() {

@@ -18,7 +18,7 @@
     <dimen name="topic_item_time_size">10dp</dimen>
     <dimen name="web_comment_layout_height">48dp</dimen>
 
-    <dimen name="video_item_height">260dp</dimen>
-    <dimen name="video_height">180dp</dimen>
+    <dimen name="video_item_height">300dp</dimen>
+    <dimen name="video_height">220dp</dimen>
     <dimen name="video_extra_height">40dp</dimen>
 </resources>

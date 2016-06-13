@@ -32,6 +32,7 @@ import com.uc.ronrwin.uctopic.constant.BundleKeys;
 import com.uc.ronrwin.uctopic.constant.NormalContants;
 import com.uc.ronrwin.uctopic.http.OkHttpUtils;
 import com.uc.ronrwin.uctopic.model.TabModel;
+import com.uc.ronrwin.uctopic.model.TransitionEvent;
 import com.uc.ronrwin.uctopic.model.base.MetaServerData;
 import com.uc.ronrwin.uctopic.model.entity.TabEntity;
 import com.uc.ronrwin.uctopic.ui.fragment.InfoFragment;
@@ -46,6 +47,9 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import de.greenrobot.event.EventBus;
+import de.greenrobot.event.Subscribe;
+import de.greenrobot.event.ThreadMode;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
@@ -103,6 +107,8 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = this;
+        EventBus.getDefault().register(this);
+
         if (Build.VERSION.SDK_INT >= 21) {
             getWindow().getDecorView().setSystemUiVisibility(
                     View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
@@ -229,6 +235,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
                 i.putExtra("url", url);
                 MainActivity.this.startActivityForResult(i, 1000);
 
+//                mTransitionLayout.setVisibility(View.GONE);
             }
 
             @Override
@@ -549,4 +556,16 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
             }
         }
     }
+
+    @Subscribe(threadMode = ThreadMode.MainThread)
+    public void hideTransitionLayout(TransitionEvent event){
+        mTransitionLayout.setVisibility(View.GONE);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
+    }
+
 }

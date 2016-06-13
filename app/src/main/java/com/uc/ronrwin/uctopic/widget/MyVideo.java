@@ -179,7 +179,7 @@ public class MyVideo extends FrameLayout {
     }
 
     private void stopLoadingPoint() {
-        mAnimPoint.setVisibility(View.GONE);
+        mVideoBgAnim.setVisibility(View.GONE);
         mVideoBgAnim.setScaleX(0f);
         mVideoBgAnim.setScaleY(0f);
         mAnimPoint.setVisibility(View.GONE);
@@ -190,6 +190,7 @@ public class MyVideo extends FrameLayout {
     private void animBg() {
         if (canAnim) {
             canAnim = false;
+            mVideoBgAnim.setVisibility(View.VISIBLE);
             PropertyValuesHolder scaleX = PropertyValuesHolder.ofFloat("scaleX", 0f, 20f);
             PropertyValuesHolder scaleY = PropertyValuesHolder.ofFloat("scaleY", 0f, 20f);
             Animator close = ObjectAnimator.ofPropertyValuesHolder(mVideoBgAnim, scaleX, scaleY);

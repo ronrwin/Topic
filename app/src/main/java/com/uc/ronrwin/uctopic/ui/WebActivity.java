@@ -12,18 +12,23 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewGroupCompat;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.TextView;
 
 import com.uc.ronrwin.uctopic.R;
+import com.uc.ronrwin.uctopic.model.TransitionEvent;
 import com.uc.ronrwin.uctopic.utils.ScreenUtils;
+
+import de.greenrobot.event.EventBus;
 
 public class WebActivity extends SwipeBackActivity implements View.OnClickListener {
 
     private Context mContext;
 
+    private ViewGroup mRoot;
     private ViewGroup mWebLayout;
     private WebView mWebView;
 
@@ -48,6 +53,7 @@ public class WebActivity extends SwipeBackActivity implements View.OnClickListen
         }
         setContentView(R.layout.activity_web);
 
+        setResult(Activity.RESULT_OK);
         initView();
 
         mWebLayout.setPadding(0, ScreenUtils.getStatusBarHeight(mContext), 0, 0);
@@ -57,10 +63,24 @@ public class WebActivity extends SwipeBackActivity implements View.OnClickListen
             url = bundle.getString("url");
             mWebView.loadUrl(url);
         }
-        setResult(Activity.RESULT_OK);
+//        mRoot.post(new Runnable() {
+//            @Override
+//            public void run() {
+//                EventBus.getDefault().post(new TransitionEvent());
+//            }
+//        });
+
+        mSwipeBackLayout.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                EventBus.getDefault().post(new TransitionEvent());
+                return false;
+            }
+        });
     }
 
     private void initView() {
+        mRoot = (ViewGroup) findViewById(R.id.layout);
         mWebLayout = (ViewGroup) findViewById(R.id.web_layout);
         mWebView = (WebView) findViewById(R.id.webview);
         mBack = (ViewGroup) findViewById(R.id.back);
