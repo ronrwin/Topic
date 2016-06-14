@@ -739,6 +739,13 @@ public class PtrFrameLayout extends ViewGroup {
         }
     }
 
+    public void reset() {
+        performRefreshComplete();
+//        tryScrollBackToTop();
+        mScrollChecker.abortIfWorking();
+
+    }
+
     /**
      * Do refresh complete work when time elapsed is greater than {@link #mLoadingMinTime}
      */

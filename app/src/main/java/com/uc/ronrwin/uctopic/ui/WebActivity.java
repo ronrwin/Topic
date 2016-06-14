@@ -1,22 +1,15 @@
 package com.uc.ronrwin.uctopic.ui;
 
-import android.animation.Animator;
-import android.animation.ObjectAnimator;
-import android.animation.PropertyValuesHolder;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.view.ViewCompat;
-import android.support.v4.view.ViewGroupCompat;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
-import android.widget.TextView;
 
 import com.uc.ronrwin.uctopic.R;
 import com.uc.ronrwin.uctopic.model.TransitionEvent;

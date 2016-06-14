@@ -165,6 +165,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
                 mTemperatureExtra.setY(mOriginTemperatureHeight);
                 mLocationLayout.setAlpha(mAnimStartAlpha);
                 mMainMask.setAlpha(mAnimStartAlpha);
+                mMainMask.setVisibility(View.GONE);
                 mTemperatureExtra.setAlpha(mAnimStartAlpha);
                 mTemperatureNum.setAlpha(mAnimStartAlpha);
                 mWindLayout.setX(halfWidth / 2 - mWindLayout.getWidth() / 2);
@@ -401,7 +402,30 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 
             @Override
             public void onAnimationEnd(Animator animation) {
-                ObjectAnimator.ofFloat(mMainMask, "alpha", 1f, 0).setDuration(DIM_DURATION).start();
+                Animator a = ObjectAnimator.ofFloat(mMainMask, "alpha", 1f, 0);
+                a.setDuration(DIM_DURATION);
+                a.start();
+                a.addListener(new Animator.AnimatorListener() {
+                    @Override
+                    public void onAnimationStart(Animator animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        mMainMask.setVisibility(View.GONE);
+                    }
+
+                    @Override
+                    public void onAnimationCancel(Animator animation) {
+
+                    }
+
+                    @Override
+                    public void onAnimationRepeat(Animator animation) {
+
+                    }
+                });
             }
 
             @Override
@@ -419,6 +443,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 
     private void openAnim() {
         // 打开过程
+        mMainMask.setVisibility(View.VISIBLE);
         Animator light = ObjectAnimator.ofFloat(mMainMask, "alpha", 0, 1f);
         light.setDuration(DIM_DURATION).start();
         light.addListener(new Animator.AnimatorListener() {
@@ -531,7 +556,8 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
                 return;
             }
         }
-        super.onBackPressed();
+//        super.onBackPressed();
+        moveTaskToBack(true);
     }
 
     @Override

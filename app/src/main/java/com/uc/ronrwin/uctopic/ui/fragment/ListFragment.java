@@ -7,6 +7,7 @@ import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -52,6 +53,8 @@ public class ListFragment extends BaseListFragment {
     private TopicAdapter mTopicAdapter;
 
     private String mTitle = "";
+    private int mIndex;
+    private boolean hasInnitLoaded = false;
 
     public ListFragment() {
     }
@@ -71,6 +74,7 @@ public class ListFragment extends BaseListFragment {
             Bundle bundle = getArguments();
             if (bundle.containsKey(BundleKeys.TITLE)) {
                 mTitle = bundle.getString(BundleKeys.TITLE);
+                mIndex = bundle.getInt(BundleKeys.INDEX);
             }
         }
         mRefreshTimePrefrenced = PreferencesHelper.getSharedPreferences("tabs");
@@ -82,22 +86,36 @@ public class ListFragment extends BaseListFragment {
         mTopicAdapter = new TopicAdapter();
         mRecyclerView.setAdapter(mDefaultRecyclerAdapter);
 
-
-        // todo:调整主页天气
         mFrameLayout.setMainActivity(getActivity());
         InfoFragment fragment = (InfoFragment) getFragmentManager().findFragmentByTag(NormalContants.FragmentTag.TOPIC_TAG);
         if (fragment != null) {
             mFrameLayout.setInfoFragment(fragment);
         }
 
-        mFrameLayout.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                mFrameLayout.autoRefresh();
-            }
-        }, 1000);
+        if (mIndex == 0 && !hasInnitLoaded) {
+            mFrameLayout.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    laodData();
+                }
+            }, 500);
+        }
 
         return mRootView;
+    }
+
+    public void laodData() {
+        if (mFrameLayout != null && !hasInnitLoaded) {
+            mFrameLayout.autoRefresh();
+//            refreshPrepare();
+        }
+    }
+
+    public void finishLoad() {
+        if (mFrameLayout != null) {
+            mFrameLayout.reset();
+            mFrameLayout.refreshComplete();
+        }
     }
 
     @Override
@@ -111,7 +129,12 @@ public class ListFragment extends BaseListFragment {
         UCTopicApplication.dataManager.loadListData(mTitle, new LoadServerDataListener<ArrayList<TopicCard>>() {
             @Override
             public void onFailure(String message) {
-                mFrameLayout.refreshComplete();
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        finishLoad();
+                    }
+                });
             }
 
             @Override
@@ -120,6 +143,7 @@ public class ListFragment extends BaseListFragment {
                 getActivity().runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        hasInnitLoaded = true;
                         mFrameLayout.refreshComplete();
                         mRecyclerView.setAdapter(mTopicAdapter);
                         mTopicAdapter.notifyDataSetChanged();
@@ -166,8 +190,6 @@ public class ListFragment extends BaseListFragment {
             } else {
                 root = (ViewGroup) itemView.findViewById(R.id.item_layout);
             }
-
-
         }
 
     }

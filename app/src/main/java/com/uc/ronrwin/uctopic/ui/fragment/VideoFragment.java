@@ -130,7 +130,12 @@ public class VideoFragment extends BaseListFragment {
         UCTopicApplication.dataManager.loadVideoData(new LoadServerDataListener<ArrayList<VideoCard>>() {
             @Override
             public void onFailure(String message) {
-                mFrameLayout.refreshComplete();
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        mFrameLayout.refreshComplete();
+                    }
+                });
             }
 
             @Override

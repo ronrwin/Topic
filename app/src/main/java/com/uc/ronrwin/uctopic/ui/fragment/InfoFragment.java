@@ -8,6 +8,8 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -68,7 +70,6 @@ public class InfoFragment extends Fragment implements View.OnClickListener {
             TabView tabView = new TabView(mContext);
             tabView.title.setText(mTabs.get(position).name);
             if (position == 0) {
-//                tabView.title.setText("头条");
                 tabView.titleIcon.setVisibility(View.VISIBLE);
                 tabView.title.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16);
             } else {
@@ -79,8 +80,6 @@ public class InfoFragment extends Fragment implements View.OnClickListener {
         }
     };
 
-
-    // TODO：暂时只使用本地的
     private void loadTab() {
         UCTopicApplication.dataManager.loadTabData(new LoadServerDataListener<ArrayList<TabEntity>>() {
             @Override
@@ -91,7 +90,12 @@ public class InfoFragment extends Fragment implements View.OnClickListener {
             @Override
             public void onSuccess(ArrayList<TabEntity> data) {
                 mTabs = data;
-                setTabAndFragmentData();
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        setTabAndFragmentData();
+                    }
+                });
             }
         });
 
@@ -102,6 +106,7 @@ public class InfoFragment extends Fragment implements View.OnClickListener {
         for (int i = 0; i < mTabs.size(); i++) {
             Bundle bundle = new Bundle();
             bundle.putString(BundleKeys.TITLE, mTabs.get(i).name);
+            bundle.putInt(BundleKeys.INDEX, i);
             ListFragment listFragment = ListFragment.newInstance(bundle);
             mFragments.add(listFragment);
         }
@@ -111,6 +116,24 @@ public class InfoFragment extends Fragment implements View.OnClickListener {
         mViewPager.setAdapter(new MyPagerAdapter());
         mSmartTabLayout.setCustomTabView(mTabProvider);
         mSmartTabLayout.setViewPager(mViewPager);
+        mViewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                mFragments.get(position).laodData();
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+
+
         PreferencesHelper.saveTabData(mTabs.toString());
     }
 
@@ -146,16 +169,8 @@ public class InfoFragment extends Fragment implements View.OnClickListener {
     }
 
 
-    public void offsetTopAndBottomY(int distance) {
-        mContentLayout.offsetTopAndBottom(distance);
-    }
-
-    public float getInfoY() {
-        return mContentLayout.getY();
-    }
 
     public void setInfoY(float distance) {
-//        ViewHelper.setScrollY(mScrollView, distance);
         mContentLayout.setY(mOriginPadding + distance);
         mViewPager.setPadding(0, 0, 0, mOriginPadding + (int) distance);
     }
@@ -200,6 +215,7 @@ public class InfoFragment extends Fragment implements View.OnClickListener {
             }
 
             if (fragment.getView().getParent() == null) {
+                ((ListFragment)fragment).finishLoad();
                 container.addView(fragment.getView()); // 为viewpager增加布局
             }
 
@@ -208,6 +224,8 @@ public class InfoFragment extends Fragment implements View.OnClickListener {
 
         @Override
         public void destroyItem(ViewGroup container, int position, Object object) {
+            Log.d("destroyItem", "destroyItem : " + position);
+            mFragments.get(position).finishLoad();
             container.removeView(mFragments.get(position).getView());
         }
     }
