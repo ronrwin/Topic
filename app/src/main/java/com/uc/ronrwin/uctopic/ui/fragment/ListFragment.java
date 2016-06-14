@@ -109,7 +109,7 @@ public class ListFragment extends BaseListFragment {
         UCTopicApplication.dataManager.loadListData(mTitle, new LoadServerDataListener<ArrayList<TopicCard>>() {
             @Override
             public void onFailure(String message) {
-
+                mFrameLayout.refreshComplete();
             }
 
             @Override

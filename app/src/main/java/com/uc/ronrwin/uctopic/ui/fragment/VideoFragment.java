@@ -130,7 +130,7 @@ public class VideoFragment extends BaseListFragment {
         UCTopicApplication.dataManager.loadVideoData(new LoadServerDataListener<ArrayList<VideoCard>>() {
             @Override
             public void onFailure(String message) {
-
+                mFrameLayout.refreshComplete();
             }
 
             @Override
