@@ -1,6 +1,7 @@
 package com.uc.ronrwin.uctopic.ui.fragment;
 
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
@@ -75,6 +76,7 @@ public class ListFragment extends BaseListFragment {
         mRefreshTimePrefrenced = PreferencesHelper.getSharedPreferences("tabs");
         mLastUpdate = mRefreshTimePrefrenced.getLong(LAST_UPDATE + mTitle, System.currentTimeMillis());
         mRefreshText.setText(TimeUtils.simplyTime(mLastUpdate));
+        mHeader.setBackgroundColor(Color.WHITE);
 
         mDefaultRecyclerAdapter = new DefaultRecyclerAdapter();
         mTopicAdapter = new TopicAdapter();

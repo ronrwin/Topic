@@ -528,8 +528,8 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
             if (mCurrentTag.equals(NormalContants.FragmentTag.LOGIN_TAG)) {
                 LoginFragment currentFragment = (LoginFragment) mFragmentManager.findFragmentByTag(mCurrentTag);
                 currentFragment.changeLoginNormalAnim();
+                return;
             }
-            return;
         }
         super.onBackPressed();
     }

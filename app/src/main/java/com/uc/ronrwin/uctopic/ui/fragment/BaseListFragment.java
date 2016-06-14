@@ -50,7 +50,7 @@ public abstract class BaseListFragment extends Fragment {
 
     protected PtrTensionIndicator mPtrTensionIndicator;
 
-    protected View mHeader;
+    protected ViewGroup mHeader;
     protected PercentCircle mPercentCircle;
     protected TextView mRefreshText;
 
@@ -59,6 +59,7 @@ public abstract class BaseListFragment extends Fragment {
     protected final String LAST_UPDATE = "last_update_";
 
     abstract void refreshLoad();
+
     abstract void refreshPrepare();
 
     @Nullable
@@ -75,9 +76,10 @@ public abstract class BaseListFragment extends Fragment {
             mRecyclerView.setLayoutManager(mLinearLayoutManager);
 
             mPtrTensionIndicator = new PtrTensionIndicator();
-            mHeader = LayoutInflater.from(mContext).inflate(R.layout.refresh_layout, null);
-            mPercentCircle = (PercentCircle) mHeader.findViewById(R.id.circle);
-            mRefreshText = (TextView) mHeader.findViewById(R.id.refresh_text);
+            View header = LayoutInflater.from(mContext).inflate(R.layout.refresh_layout, null);
+            mHeader = (ViewGroup) header.findViewById(R.id.header_layout);
+            mPercentCircle = (PercentCircle) header.findViewById(R.id.circle);
+            mRefreshText = (TextView) header.findViewById(R.id.refresh_text);
             mFrameLayout.setPtrIndicator(mPtrTensionIndicator);
             mFrameLayout.setResistance(1.1f);
 
