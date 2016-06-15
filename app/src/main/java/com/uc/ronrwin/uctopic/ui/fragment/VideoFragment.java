@@ -43,6 +43,9 @@ public class VideoFragment extends BaseListFragment {
     private VH mPlayingVH;
     private int VIDEO_COUNT = 50;
 
+    private int mOldFirstCompletelyVisibleItemPosition;
+    private int mOldLastCompletelyVisibleItemPosition;
+
 
     public VideoFragment() {
     }
@@ -88,10 +91,14 @@ public class VideoFragment extends BaseListFragment {
                 int firstCompletelyVisibleItemPosition = mLinearLayoutManager.findFirstCompletelyVisibleItemPosition();
                 int lastCompletelyVisibleItemPosition = mLinearLayoutManager.findLastCompletelyVisibleItemPosition();
                 if (mPlayingPosition >= 0) {
-                    if (mPlayingPosition < firstCompletelyVisibleItemPosition || mPlayingPosition > lastCompletelyVisibleItemPosition) {
-                        if (mPlayingVH != null && mPlayingVH.mMyVideo.mPlayer.isPlaying()) {
-                            mPlayingVH.mMyVideo.mPlayer.pause();
-                            mPlayingVH.mMyVideo.show();
+                    if (mOldFirstCompletelyVisibleItemPosition != firstCompletelyVisibleItemPosition
+                            || mOldLastCompletelyVisibleItemPosition != lastCompletelyVisibleItemPosition)
+                    {
+                        if (mPlayingPosition < firstCompletelyVisibleItemPosition || mPlayingPosition > lastCompletelyVisibleItemPosition) {
+                            if (mPlayingVH != null && mPlayingVH.mMyVideo.mPlayer.isPlaying()) {
+                                mPlayingVH.mMyVideo.mPlayer.pause();
+                                mPlayingVH.mMyVideo.show();
+                            }
                         }
                     }
                     if (mPlayingPosition < firstVisible || mPlayingPosition > lastVisible) {
@@ -102,6 +109,8 @@ public class VideoFragment extends BaseListFragment {
                         }
                     }
                 }
+                mOldFirstCompletelyVisibleItemPosition = firstCompletelyVisibleItemPosition;
+                mOldLastCompletelyVisibleItemPosition = lastCompletelyVisibleItemPosition;
                 super.onScrolled(recyclerView, dx, dy);
             }
         });

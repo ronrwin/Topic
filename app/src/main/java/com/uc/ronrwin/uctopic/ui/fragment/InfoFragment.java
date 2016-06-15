@@ -23,6 +23,7 @@ import com.uc.ronrwin.uctopic.constant.BundleKeys;
 import com.uc.ronrwin.uctopic.http.LoadServerDataListener;
 import com.uc.ronrwin.uctopic.model.entity.TabEntity;
 import com.uc.ronrwin.uctopic.utils.PreferencesHelper;
+import com.uc.ronrwin.uctopic.utils.ScreenUtils;
 import com.uc.ronrwin.uctopic.widget.UCViewPager;
 import com.uc.ronrwin.uctopic.widget.smarttablayout.SmartTabLayout;
 import com.uc.ronrwin.uctopic.widget.smarttablayout.TabView;
@@ -155,7 +156,14 @@ public class InfoFragment extends Fragment implements View.OnClickListener {
             setTabAndFragmentData();
 
             mOriginPadding = mContext.getResources().getDimensionPixelSize(R.dimen.temperature_height);
-            setInfoY(0);
+
+            mViewPager.post(new Runnable() {
+                @Override
+                public void run() {
+                    setInfoY(0);
+                    mViewPager.setPadding(0, 0, 0, ScreenUtils.getStatusBarHeight(mContext));
+                }
+            });
 
             loadTab();
             mChannelSetting.setOnClickListener(this);
@@ -169,10 +177,9 @@ public class InfoFragment extends Fragment implements View.OnClickListener {
     }
 
 
-
     public void setInfoY(float distance) {
         mContentLayout.setY(mOriginPadding + distance);
-        mViewPager.setPadding(0, 0, 0, mOriginPadding + (int) distance);
+//        mViewPager.setPadding(0, 0, 0, mOriginPadding + (int) distance);
     }
 
     @Override
@@ -215,7 +222,7 @@ public class InfoFragment extends Fragment implements View.OnClickListener {
             }
 
             if (fragment.getView().getParent() == null) {
-                ((ListFragment)fragment).finishLoad();
+                ((ListFragment) fragment).finishLoad();
                 container.addView(fragment.getView()); // 为viewpager增加布局
             }
 
@@ -224,7 +231,6 @@ public class InfoFragment extends Fragment implements View.OnClickListener {
 
         @Override
         public void destroyItem(ViewGroup container, int position, Object object) {
-            Log.d("destroyItem", "destroyItem : " + position);
             mFragments.get(position).finishLoad();
             container.removeView(mFragments.get(position).getView());
         }

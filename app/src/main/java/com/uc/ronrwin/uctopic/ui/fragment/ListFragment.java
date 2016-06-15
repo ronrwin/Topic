@@ -119,7 +119,7 @@ public class ListFragment extends BaseListFragment {
     }
 
     @Override
-    void refreshPrepare() {
+    protected void refreshPrepare() {
         mLastUpdate = mRefreshTimePrefrenced.getLong(LAST_UPDATE + mTitle, System.currentTimeMillis());
         mRefreshText.setText(TimeUtils.simplyTime(mLastUpdate));
     }
