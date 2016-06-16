@@ -16,9 +16,6 @@ public class MetaServerData {
     public String message;
     public JSONObject metaJson;
 
-    public static final int OK = 1;
-    public static final int FAIL = -1;
-
     public MetaServerData(JSONObject json) {
         metaJson = json;
         code = json.optInt("code", 1);

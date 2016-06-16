@@ -209,7 +209,6 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 
     public void startTransition(View origintView, final String url) {
         mTransitionLayout.setVisibility(View.VISIBLE);
-        mTransitionLayout.setAlpha(1f);
         int height = origintView.getMeasuredHeight();
         int mainHeight = mMainLayout.getHeight();
         float scaleY = (float) mMainLayout.getHeight() / (float) height;
@@ -226,30 +225,21 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
         a.start();
         a.addListener(new Animator.AnimatorListener() {
             @Override
-            public void onAnimationStart(Animator animation) {
-
-            }
+            public void onAnimationStart(Animator animation) {}
 
             @Override
             public void onAnimationEnd(Animator animation) {
                 Intent i = new Intent(mContext, WebActivity.class);
                 i.putExtra("url", url);
                 MainActivity.this.startActivityForResult(i, 1000);
-
-//                mTransitionLayout.setVisibility(View.GONE);
             }
 
             @Override
-            public void onAnimationCancel(Animator animation) {
-
-            }
+            public void onAnimationCancel(Animator animation) {}
 
             @Override
-            public void onAnimationRepeat(Animator animation) {
-
-            }
+            public void onAnimationRepeat(Animator animation) {}
         });
-
     }
 
     @Override

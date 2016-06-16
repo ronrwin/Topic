@@ -10,12 +10,13 @@ import org.json.JSONObject;
  * Creation    : 2016/5/18
  * Author      : Ronrwin
  */
-public abstract class BaseCard extends Entity{
+public abstract class BaseCard extends Entity {
     public int typeId;
     public String title;
     public long createtime;
 
-    public BaseCard() {}
+    public BaseCard() {
+    }
 
     public BaseCard(JSONObject json) {
         typeId = json.optInt("typeId", 0);

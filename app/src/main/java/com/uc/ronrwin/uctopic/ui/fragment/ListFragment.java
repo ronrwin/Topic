@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 import com.uc.ronrwin.uctopic.R;
@@ -106,8 +107,8 @@ public class ListFragment extends BaseListFragment {
 
     public void laodData() {
         if (mFrameLayout != null && !hasInnitLoaded) {
-            mFrameLayout.autoRefresh();
-//            refreshPrepare();
+//            mFrameLayout.autoRefresh();
+            refreshLoad();
         }
     }
 
@@ -133,6 +134,7 @@ public class ListFragment extends BaseListFragment {
                     @Override
                     public void run() {
                         finishLoad();
+                        Toast.makeText(mContext, "Loading Failed", Toast.LENGTH_SHORT).show();
                     }
                 });
             }

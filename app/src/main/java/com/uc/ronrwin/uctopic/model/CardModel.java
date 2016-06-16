@@ -33,11 +33,4 @@ public class CardModel {
         return new ArrayList<>();
     }
 
-    public MetaServerData getTopicMeta(String key) {
-        if (mTopicMeta.containsKey(key)) {
-            return mTopicMeta.get(key);
-        }
-        return null;
-    }
-
 }

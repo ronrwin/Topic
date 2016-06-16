@@ -10,6 +10,7 @@ import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 import com.uc.ronrwin.uctopic.R;
@@ -85,7 +86,6 @@ public class VideoFragment extends BaseListFragment {
 
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-
                 int firstVisible = mLinearLayoutManager.findFirstVisibleItemPosition();
                 int lastVisible = mLinearLayoutManager.findLastVisibleItemPosition();
                 int firstCompletelyVisibleItemPosition = mLinearLayoutManager.findFirstCompletelyVisibleItemPosition();
@@ -143,6 +143,7 @@ public class VideoFragment extends BaseListFragment {
                     @Override
                     public void run() {
                         mFrameLayout.refreshComplete();
+                        Toast.makeText(mContext, "Loading Failed", Toast.LENGTH_SHORT).show();
                     }
                 });
             }

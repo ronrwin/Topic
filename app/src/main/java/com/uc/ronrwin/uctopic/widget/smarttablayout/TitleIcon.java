@@ -80,12 +80,11 @@ public class TitleIcon extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-//        canvas.drawColor(Color.CYAN);
         canvas.drawBitmap(bitmap, 0, 0, mPaint);
 
         canvas.save();
         mPath.reset();
-        canvas.clipPath(mPath); // makes the clip empty
+//        canvas.clipPath(mPath); // makes the clip empty
         mPath.moveTo(0, 0);
         mPath.lineTo(0, movingX);
         mPath.lineTo(movingX, 0);

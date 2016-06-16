@@ -1,10 +1,7 @@
 package com.uc.ronrwin.uctopic.manager;
 
-import com.uc.ronrwin.uctopic.R;
 import com.uc.ronrwin.uctopic.application.UCTopicApplication;
-import com.uc.ronrwin.uctopic.constant.NormalContants;
 import com.uc.ronrwin.uctopic.http.LoadServerDataListener;
-import com.uc.ronrwin.uctopic.http.OkHttpUtils;
 import com.uc.ronrwin.uctopic.http.ParseUtils;
 import com.uc.ronrwin.uctopic.model.TabModel;
 import com.uc.ronrwin.uctopic.model.CardModel;
@@ -12,8 +9,6 @@ import com.uc.ronrwin.uctopic.model.base.MetaServerData;
 import com.uc.ronrwin.uctopic.model.entity.TabEntity;
 import com.uc.ronrwin.uctopic.model.entity.TopicCard;
 import com.uc.ronrwin.uctopic.model.entity.VideoCard;
-import com.uc.ronrwin.uctopic.ui.fragment.ListFragment;
-import com.uc.ronrwin.uctopic.ui.fragment.VideoFragment;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -43,7 +38,7 @@ public class DataManager {
         cardModel = new CardModel();
     }
 
-    public void loadTabData(final LoadServerDataListener loadServerDataListener) {
+    public void loadTabData(final LoadServerDataListener<ArrayList<TabEntity>> loadServerDataListener) {
         UCTopicApplication.requestManager.loadTabList(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
@@ -67,7 +62,7 @@ public class DataManager {
         });
     }
 
-    public void loadListData(final String key, final LoadServerDataListener loadServerDataListener, final boolean isReload) {
+    public void loadListData(final String key, final LoadServerDataListener<ArrayList<TopicCard>> loadServerDataListener, final boolean isReload) {
         UCTopicApplication.requestManager.loadTopicList(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
@@ -92,12 +87,11 @@ public class DataManager {
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
-
             }
         });
     }
 
-    public void loadVideoData(final LoadServerDataListener loadServerDataListener, final boolean isReload) {
+    public void loadVideoData(final LoadServerDataListener<ArrayList<VideoCard>> loadServerDataListener, final boolean isReload) {
         UCTopicApplication.requestManager.loadVideoList(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
@@ -109,6 +103,7 @@ public class DataManager {
                 final String r = response.body().string();
                 try {
                     MetaServerData mMetaMeta = new MetaServerData(new JSONObject(r));
+                    cardModel.mVideoMeta = mMetaMeta;
                     ArrayList<VideoCard> videos = ParseUtils.parseEntityList(mMetaMeta.metaJson, VideoCard.getBuilder());
                     if (isReload) {
                         cardModel.mVideoList.clear();
